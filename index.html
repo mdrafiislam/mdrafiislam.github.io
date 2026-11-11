@@ -1,0 +1,873 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Md Rafi Islam | Embedded Systems and Wearable Sensing</title>
+<meta name="description" content="Md Rafi Islam: embedded firmware, hardware bring-up, and validated sensor data pipelines for wearable devices. PhD candidate in Electrical Engineering, The University of Alabama. Available January 2027.">
+<meta property="og:title" content="Md Rafi Islam | Embedded Systems and Wearable Sensing">
+<meta property="og:description" content="Firmware, hardware bring-up, and validated sensor data for wearable devices. Available January 2027.">
+<meta property="og:image" content="https://mdrafiislam.github.io/assets/rafi.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d5c45'/%3E%3Cpath d='M4 20h6l3-9 4 14 3-9h8' fill='none' stroke='%23e0a458' stroke-width='2.4' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,300..800;1,100,400&display=swap" rel="stylesheet">
+<style>
+/* ------------------------------------------------------------------
+   Colour tokens. Board green and copper, on a cool off-white.
+   ------------------------------------------------------------------ */
+:root {
+  --bg: #f4f6f5;
+  --surface: #ffffff;
+  --ink: #15211d;
+  --ink-2: #4a5a54;
+  --rule: #d3dcd8;
+  --board: #1d5c45;      /* solder-mask green */
+  --board-ink: #ffffff;
+  --copper: #a8661f;     /* copper trace */
+  --trace-2: #5f8f7d;
+  --row: #eef2f0;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1714;
+    --surface: #16201c;
+    --ink: #e4ebe7;
+    --ink-2: #a3b3ac;
+    --rule: #2c3a35;
+    --board: #6cc39e;
+    --board-ink: #0c1411;
+    --copper: #e0a458;
+    --trace-2: #4f7a6a;
+    --row: #1b2722;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1714; --surface: #16201c; --ink: #e4ebe7; --ink-2: #a3b3ac;
+  --rule: #2c3a35; --board: #6cc39e; --board-ink: #0c1411; --copper: #e0a458;
+  --trace-2: #4f7a6a; --row: #1b2722; color-scheme: dark;
+}
+
+/* ------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------ */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+}
+a { color: var(--board); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 3px solid var(--copper); outline-offset: 2px; border-radius: 3px; }
+img { max-width: 100%; display: block; }
+h1, h2, h3 { font-stretch: 112%; line-height: 1.15; margin: 0; }
+h2 { font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.2rem); font-weight: 700; letter-spacing: -0.01em; }
+h3 { font-size: 1.25rem; font-weight: 700; }
+p { margin: 0 0 1em; }
+ul { margin: 0; padding-left: 1.15em; }
+li { margin: 0.3em 0; }
+li::marker { color: var(--copper); }
+.wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+.lede { color: var(--ink-2); max-width: 66ch; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: -999px; top: 8px; background: var(--surface); padding: 8px 12px; z-index: 30; }
+.skip:focus { left: 16px; }
+
+/* ------------------------------------------------------------------
+   Top bar
+   ------------------------------------------------------------------ */
+.topbar {
+  position: sticky; top: 0; z-index: 20;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+.brand { font-weight: 700; font-stretch: 112%; color: var(--ink); text-decoration: none; white-space: nowrap; }
+.nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-left: auto; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a {
+  color: var(--ink-2); text-decoration: none; white-space: nowrap;
+  padding: 6px 10px; border-radius: 6px; font-size: 0.95rem;
+}
+.nav a:hover, .nav a[aria-current="true"] { color: var(--ink); background: var(--row); }
+@media (max-width: 760px) {
+  .topbar .wrap { gap: 12px; }
+  .brand { display: none; }
+  .nav { margin-left: 0; }
+}
+
+/* ------------------------------------------------------------------
+   Hero
+   ------------------------------------------------------------------ */
+.hero { padding: clamp(40px, 7vw, 88px) 0 0; }
+.hero-grid { display: grid; grid-template-columns: 1fr auto; gap: clamp(24px, 5vw, 64px); align-items: center; }
+.hero h1 { font-size: clamp(2.4rem, 1.6rem + 3.6vw, 4.4rem); font-weight: 800; font-stretch: 118%; letter-spacing: -0.02em; }
+.hero .role { font-size: clamp(1.2rem, 1rem + 0.8vw, 1.6rem); font-weight: 500; margin: 0.5em 0 0.7em; max-width: 34ch; line-height: 1.35; }
+.hero .lede { font-size: 1.0625rem; }
+.portrait {
+  width: clamp(168px, 22vw, 260px); height: auto; aspect-ratio: 1; border-radius: 50%;
+  object-fit: cover; border: 6px solid var(--surface);
+  box-shadow: 0 0 0 1px var(--rule);
+}
+.availability {
+  display: inline-flex; flex-wrap: wrap; gap: 4px 16px; margin: 0.2em 0 1.4em;
+  padding: 10px 14px; border-left: 3px solid var(--copper); background: var(--surface);
+}
+.availability strong { font-weight: 700; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
+  padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none;
+  border: 1.5px solid var(--board); color: var(--board); background: transparent;
+}
+.btn.primary { background: var(--board); color: var(--board-ink); }
+.btn:hover { text-decoration: none; filter: brightness(1.08); }
+.btn svg { width: 18px; height: 18px; flex: none; }
+.links { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 18px; font-size: 0.95rem; }
+.links a { color: var(--ink-2); }
+
+/* The one moving thing: a decorative signal trace drawn on load. */
+.trace { width: 100%; height: 120px; margin-top: clamp(28px, 5vw, 56px); display: block; }
+.trace path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.trace .t1 { stroke: var(--copper); stroke-width: 2; }
+.trace .t2 { stroke: var(--trace-2); stroke-width: 1.5; opacity: 0.8; }
+.trace .grid { stroke: var(--rule); stroke-width: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .trace .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 2.4s cubic-bezier(.4,.1,.2,1) .2s forwards; }
+  .trace .t2.draw { animation-delay: .5s; }
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* ------------------------------------------------------------------
+   Sections
+   ------------------------------------------------------------------ */
+section { padding: clamp(48px, 7vw, 88px) 0 0; }
+.section-head { display: grid; gap: 10px; margin-bottom: 28px; }
+.section-head p { color: var(--ink-2); max-width: 66ch; margin: 0; }
+
+/* Datasheet table: the signature element */
+.datasheet {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden;
+}
+.datasheet table { width: 100%; border-collapse: collapse; }
+.datasheet caption { text-align: left; padding: 14px 18px; font-weight: 600; border-bottom: 2px solid var(--board); }
+.datasheet th, .datasheet td { text-align: left; padding: 11px 18px; vertical-align: top; }
+.datasheet thead th { font-size: 0.9rem; color: var(--ink-2); font-weight: 600; border-bottom: 1px solid var(--rule); }
+.datasheet tbody tr:nth-child(even) { background: var(--row); }
+.datasheet td.val { font-weight: 700; font-stretch: 108%; white-space: nowrap; color: var(--board); font-size: 1.08rem; }
+.datasheet td.cond { color: var(--ink-2); }
+.datasheet a { color: inherit; }
+@media (max-width: 640px) {
+  .datasheet thead { display: none; }
+  .datasheet tbody tr { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 12px 16px; }
+  .datasheet th, .datasheet td { padding: 0; }
+  .datasheet tbody th { grid-column: 1; font-weight: 600; }
+  .datasheet td.val { grid-column: 2; grid-row: 1; text-align: right; }
+  .datasheet td.cond { grid-column: 1 / -1; font-size: 0.95rem; }
+}
+
+/* Projects as part entries */
+.parts { display: grid; gap: 22px; }
+.part {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+  padding: clamp(18px, 3vw, 28px);
+  display: grid; grid-template-columns: minmax(0, 1fr) 260px; grid-template-rows: auto auto 1fr; gap: 8px 32px;
+}
+.part > * { min-width: 0; }
+.part header { grid-column: 1 / -1; display: grid; gap: 6px; }
+.part .why { font-size: 1.1rem; margin: 6px 0 0; max-width: 62ch; }
+.part .body { grid-column: 1; }
+.part aside { grid-column: 2; grid-row: 2 / span 2; border-left: 1px solid var(--rule); padding-left: 24px; font-size: 0.95rem; }
+.part aside dl { margin: 0; display: grid; gap: 10px; }
+.part aside dt { color: var(--ink-2); font-size: 0.85rem; }
+.part aside dd { margin: 0; }
+.part .did { margin-top: 12px; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.tags li { margin: 0; padding: 2px 9px; border: 1px solid var(--rule); border-radius: 999px; font-size: 0.85rem; color: var(--ink-2); }
+.part-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+details.more { grid-column: 1; margin-top: 4px; align-self: start; }
+details.more summary {
+  cursor: pointer; font-weight: 600; color: var(--board); list-style: none;
+  display: inline-flex; align-items: center; gap: 6px; min-height: 40px;
+}
+details.more summary::-webkit-details-marker { display: none; }
+details.more summary::before { content: "+"; display: inline-grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid currentColor; border-radius: 4px; font-size: 0.9rem; line-height: 1; }
+details.more[open] summary::before { content: "\2212"; }
+details.more[open] summary { margin-bottom: 6px; }
+@media (max-width: 820px) {
+  .part { grid-template-columns: 1fr; grid-template-rows: none; }
+  .part aside { grid-column: 1; grid-row: auto; border-left: 0; padding-left: 0; border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 8px; }
+  .part aside dl { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+}
+
+/* Two-column lists */
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 22px; }
+.panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: clamp(18px, 3vw, 26px); }
+.panel h3 { margin-bottom: 12px; }
+
+/* Skills */
+.skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0 40px; }
+.skill { padding: 14px 0; border-top: 1px solid var(--rule); }
+.skill h3 { font-size: 1rem; margin-bottom: 6px; }
+.skill p { margin: 0; color: var(--ink-2); }
+.skill em { font-style: normal; color: var(--ink); font-weight: 600; }
+
+/* Timeline: real sequence, so dates lead */
+.timeline { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.timeline > li { display: grid; grid-template-columns: 190px 1fr; gap: 6px 28px; padding: 18px 0; border-top: 1px solid var(--rule); margin: 0; }
+.timeline .when { color: var(--ink-2); font-size: 0.95rem; padding-top: 2px; }
+.timeline h3 { font-size: 1.1rem; }
+.timeline .where { color: var(--ink-2); margin: 2px 0 8px; }
+.timeline ul { margin-top: 4px; }
+.timeline ul li { margin: 0.35em 0; }
+@media (max-width: 640px) { .timeline > li { grid-template-columns: 1fr; } }
+
+/* Research and publications */
+.metrics { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 22px; padding: 14px 18px; background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; margin-bottom: 28px; }
+.metrics .m { font-size: 1.5rem; font-weight: 700; font-stretch: 110%; color: var(--board); }
+.metrics .k { color: var(--ink-2); margin-left: 4px; }
+.metrics small { color: var(--ink-2); flex-basis: 100%; }
+.pubs h3 { font-size: 1.05rem; margin: 26px 0 8px; display: flex; align-items: baseline; gap: 10px; }
+.pubs h3 .count { color: var(--ink-2); font-weight: 400; font-stretch: 100%; font-size: 0.95rem; }
+.pubs ol { margin: 0; padding-left: 1.6em; }
+.pubs li { margin: 0.55em 0; max-width: 78ch; }
+.pubs .me { font-weight: 700; }
+.pubs .venue { font-style: italic; }
+.pill { display: inline-block; font-size: 0.78rem; padding: 0 8px; border-radius: 999px; background: var(--row); color: var(--ink-2); margin-left: 4px; white-space: nowrap; }
+.note { color: var(--ink-2); font-size: 0.95rem; }
+
+/* Contact */
+.contact { background: var(--board); color: var(--board-ink); border-radius: 14px; padding: clamp(24px, 5vw, 48px); display: grid; gap: 22px; }
+.contact h2 { color: inherit; }
+.contact p { margin: 0; max-width: 60ch; }
+.contact a { color: inherit; }
+.contact .btn { border-color: var(--board-ink); color: var(--board-ink); }
+.contact .btn.primary { background: var(--board-ink); color: var(--board); }
+.contact .email { font-size: clamp(1.15rem, 1rem + 1vw, 1.6rem); font-weight: 700; font-stretch: 108%; word-break: break-all; }
+footer { padding: 40px 0 56px; color: var(--ink-2); font-size: 0.9rem; }
+footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
+.theme-toggle { background: none; border: 1px solid var(--rule); color: var(--ink-2); border-radius: 6px; padding: 4px 10px; font: inherit; cursor: pointer; }
+
+@media (max-width: 720px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .portrait { grid-row: 1; width: 132px; border-width: 4px; }
+  .trace { height: 80px; }
+}
+@media print {
+  .topbar, .trace, .theme-toggle, details.more summary { display: none; }
+  details.more > * { display: block; }
+  body { background: #fff; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#top">Md Rafi Islam</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#specs">Results</a>
+      <a href="#work">Projects</a>
+      <a href="#validation">Validation</a>
+      <a href="#skills">Skills</a>
+      <a href="#experience">Experience</a>
+      <a href="#research">Research</a>
+      <a href="#publications">Publications</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+<!-- =============================================================== HERO -->
+<div class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <h1>Md Rafi Islam</h1>
+        <p class="role">Embedded systems engineer building firmware, hardware, and validated data pipelines for wearable sensors.</p>
+        <p class="lede">PhD candidate in Electrical Engineering at The University of Alabama, with five years of experience building firmware, hardware validation workflows and sensor data pipelines for multi-sensor wearables. Bare-metal C across three microcontroller families (STM32 Cortex-M4, MSP430, nRF52832), owning the work end to end: schematic revision and board bring-up, firmware and Bluetooth Low Energy, then checking that the data the device produces is right.</p>
+        <p class="availability"><span><strong>Available January 2027</strong></span><span>PhD expected December 2026</span><span>Tuscaloosa, AL</span></p>
+        <div class="actions">
+          <a class="btn primary" href="cv/Md_Rafi_Islam_Resume_Industry.pdf" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 19h16"/></svg>
+            Industry résumé (PDF)
+          </a>
+          <a class="btn" href="cv/Md_Rafi_Islam_CV_Academic.pdf" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 19h16"/></svg>
+            Academic CV (PDF)
+          </a>
+          <a class="btn" href="mailto:md_rafi_islam@yahoo.com">Email me</a>
+        </div>
+        <p class="links">
+          <a href="https://github.com/mdrafiislam">GitHub</a>
+          <a href="https://www.linkedin.com/in/md-rafi-islam">LinkedIn</a>
+          <a href="https://scholar.google.com/citations?user=sG1AczMAAAAJ">Google Scholar</a>
+          <a href="https://orcid.org/0000-0002-2180-5006">ORCID</a>
+        </p>
+      </div>
+      <img class="portrait" src="assets/rafi.jpg" alt="Portrait of Md Rafi Islam" width="260" height="260">
+    </div>
+    <svg class="trace" id="trace" viewBox="0 0 1120 120" preserveAspectRatio="none" aria-hidden="true" focusable="false"></svg>
+  </div>
+</div>
+
+<!-- =============================================================== SPECS -->
+<section id="specs" aria-labelledby="specs-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="specs-h">Measured results</h2>
+      <p>Numbers from devices I built or co-built and the data they produced, with the conditions they were measured under.</p>
+    </div>
+    <div class="datasheet">
+      <table>
+        <caption>Key figures, with test conditions</caption>
+        <thead><tr><th scope="col">Parameter</th><th scope="col">Value</th><th scope="col">Conditions</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">BLE current during transmission</th><td class="val">180 µA</td><td class="cond">Down from 1.6 mA; nRF52832 firmware (<a href="#p-ble">BLE low-power project</a>)</td></tr>
+          <tr><th scope="row">BLE current while advertising</th><td class="val">6 µA</td><td class="cond">Down from 50 µA; same firmware</td></tr>
+          <tr><th scope="row">BLE throughput</th><td class="val">8192 bit/s</td><td class="cond">nRF52832, optimizing GATT and GAP performance and DFU handling</td></tr>
+          <tr><th scope="row">Event timestamp resolution</th><td class="val">≈30.5 µs</td><td class="cond">1/32768 s from a hardware timer; 64-bit extended POSIX time, MSP430G2433 (<a href="#p-friends">FRIENDS</a>)</td></tr>
+          <tr><th scope="row">Unattended logging</th><td class="val">up to 10 days</td><td class="cond">Continuous free-living collection using low-power modes (FRIENDS)</td></tr>
+          <tr><th scope="row">Timestamp-conversion drift</th><td class="val">&lt; 10 s over a full day</td><td class="cond">Timestamp conversion checked during FRIENDS validation</td></tr>
+          <tr><th scope="row">Puff duration captured</th><td class="val">99.46 %</td><td class="cond">FRIENDS GUI validation across 72 puffing events</td></tr>
+          <tr><th scope="row">Devices in compatibility library</th><td class="val">90+</td><td class="cond">FRIENDS library; I tested and documented 70+ e-cigarette devices on an electromechanical vaping machine</td></tr>
+          <tr><th scope="row">Energy-expenditure error</th><td class="val">0.614 MET</td><td class="cond">Per-participant mean absolute error in unseen participants, against Cosmed K5 indirect calorimetry; 12 adults, 14 activities (<a href="#p-lacelock">Smart Lacelock</a>)</td></tr>
+          <tr><th scope="row">Sit-to-stand detection</th><td class="val">F1 0.787</td><td class="cond">Pooled event F1, 16 older adults, leave-one-participant-out validation (<a href="#p-sist">sit-to-stand study</a>)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== WORK -->
+<section id="work" aria-labelledby="work-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="work-h">Projects</h2>
+      <p>Wearable devices funded by the NSF and the NIH, from firmware and boards through to the analysis of the data they collect. Open any project for the engineering detail.</p>
+    </div>
+    <div class="parts">
+
+      <!-- FRIENDS-2 -->
+      <article class="part" id="p-friends2">
+        <header>
+          <h3>FRIENDS-2: dual-core STM32WB5 sensor board firmware</h3>
+          <p class="why">Moves the FRIENDS vaping monitor to a wireless STM32 module so sensor data can be streamed, not only logged to onboard memory.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>Wrote the complete bare-metal C application firmware for a custom board on the STM32WB5MMG, splitting work between the Cortex-M4 application core and the Cortex-M0+ BLE core.</li>
+            <li>Streams sensor samples over BLE GATT notifications at 20 Hz, logs to an SD card, and switches USB class at runtime so a host can read the card directly.</li>
+            <li>Diagnosed and fixed a dual-core clock ownership fault that let the BLE core power down the USB clock.</li>
+          </ul>
+        </div>
+        <details class="more">
+          <summary>Engineering detail</summary>
+          <ul>
+            <li>Dual LIS2MDL magnetometers over SPI at 20 Hz, computing per-sensor magnitude and a differential vector that cancels the Earth's field, with boot-time baseline zeroing.</li>
+            <li>Event detection with TIM2 in PWM-input mode, measuring period and duty cycle of an external signal inside the ISR with running-mean hysteresis detection.</li>
+            <li>Bounded interrupt latency: the ISR sets flags only, deferring SD card and USB work to the main loop.</li>
+            <li>SD logging on FatFs over SPI with a custom disk I/O layer, paired CSV run files, periodic sync, and safe close on stop.</li>
+            <li>Runtime USB class switching: boots as a CDC virtual COM port for commands and streaming, switches to USB Mass Storage on command, and returns to CDC on eject.</li>
+            <li>BLE through the STM32_WPAN stack on CPU2, with ATT MTU exchange on connect to carry full-size packets.</li>
+            <li>Software-triggered USB DFU: a serial command closes open files, detaches USB, sets a flag in an RTC backup register and resets, so the next boot jumps to the ST system bootloader before any clock or peripheral initialisation.</li>
+            <li>Claimed the USB 48 MHz clock through a hardware semaphore so the BLE core cannot power it down, and added a runtime guard.</li>
+          </ul>
+        </details>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>Sole developer</dd></div>
+            <div><dt>Dates</dt><dd>January 2026 – present</dd></div>
+            <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>STM32WB5MMG</li><li>Cortex-M4 / M0+</li><li>Bare-metal C</li><li>FatFs</li><li>USB CDC / MSC / DFU</li><li>BLE GATT</li></ul></dd></div>
+            <div><dt>Code</dt><dd><a href="https://github.com/mdrafiislam/FRIENDS_2_STM32WB5">FRIENDS_2_STM32WB5</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- FRIENDS -->
+      <article class="part" id="p-friends">
+        <header>
+          <h3>FRIENDS: wearable monitor for vaping behavior</h3>
+          <p class="why">A passive monitor that records puffs, device handling and mouthpiece aerosol temperature, giving tobacco and public-health researchers objective measurements of vaping behavior.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>Co-developed the bare-metal MSP430G2433 firmware: SPI flash logging, UART protocols, and real-time electromagnetic, capacitive-touch and thermistor sensing, with ≈30.5 µs timestamps and up to 10 days of unattended logging.</li>
+            <li>Tested and documented 70+ e-cigarette devices on the VM-FRIENDS electromechanical vaping machine, and built the compatibility library that now covers 90+ devices and informs the puff-detection algorithms.</li>
+            <li>Designed fault-injection tests for the data pipeline, and validated the open-source FRIENDS GUI to capture 99.46 % of actual puff duration.</li>
+          </ul>
+        </div>
+        <details class="more">
+          <summary>Engineering detail</summary>
+          <ul>
+            <li>Events are written to onboard flash as 16-character hexadecimal records; timestamps are hardware-timer-based 64-bit extended POSIX time at 1/32768 s resolution.</li>
+            <li>Hardware bring-up: schematic updates, PCB modifications, sensor calibration and mixed-signal debugging.</li>
+            <li>Co-designed the enclosure in Autodesk Fusion 360 and printed prototype parts on an Afinia H800 fused-filament-fabrication printer.</li>
+            <li>Mapped electromagnetic detection-sensitivity zones per device, determined where thermistor-assisted detection is needed, and documented deployment configurations.</li>
+            <li>Fault injection: built a corrupted copy of a known-good log with truncated timestamps, missing lines, stripped prefix bytes and malformed indentation, then verified by automated file comparison that every injected fault was detected and reported.</li>
+            <li>A 24-hour validation protocol surfaced 17 electromagnetic false positives, removed with a 1.0 s minimum-duration filter.</li>
+            <li>Re-runs the device validation suite after firmware changes to catch regressions before deployment.</li>
+            <li>For the FRIENDS GUI: software testing, validation and maintenance, including timestamp conversion, event decoding, data extraction, and consistency between the executable and the standalone script.</li>
+          </ul>
+        </details>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>Co-developer: firmware, data software, device characterization</dd></div>
+            <div><dt>Dates</dt><dd>2024 – ongoing</dd></div>
+            <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>MSP430G2433</li><li>Bare-metal C</li><li>SPI flash</li><li>UART</li><li>Python</li></ul></dd></div>
+            <div><dt>Links</dt><dd class="part-links"><a href="https://github.com/eszsonic/FRIENDSGUI">FRIENDS GUI code</a><a href="https://doi.org/10.5334/jors.613">GUI paper (JORS 2026)</a><span>Firmware: device paper under review, IEEE Sensors Journal</span><a href="https://claws.eng.ua.edu/research-projects/44-friends/299-friends-vape-library">Vape library</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- BLE -->
+      <article class="part" id="p-ble">
+        <header>
+          <h3>Low-power BLE firmware for wearable sensors</h3>
+          <p class="why">Longer runtime for wearables that record continuously during daily life.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>Programmed the nRF52832 for BLE at 8192 bit/s, optimizing GATT and GAP performance and DFU handling.</li>
+            <li>Cut current during transmission from 1.6 mA to 180 µA, and while advertising from 50 µA to 6 µA.</li>
+            <li>Worked within the nRF52832's RAM limits during development, and built MATLAB tools for real-time BLE acquisition and visualization.</li>
+          </ul>
+        </div>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>Firmware developer</dd></div>
+            <div><dt>Dates</dt><dd>2023 – 2024</dd></div>
+            <div><dt>Funding</dt><dd>NSF 1734501</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>nRF52832</li><li>BLE GATT / GAP / DFU</li><li>Segger Embedded Studio</li><li>MATLAB</li></ul></dd></div>
+            <div><dt>Code</dt><dd><a href="https://github.com/mdrafiislam/BLE_nRF52832">BLE_nRF52832</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- Smart Lacelock / MET -->
+      <article class="part" id="p-lacelock">
+        <header>
+          <h3>Smart Lacelock: shoe-worn sensing and energy expenditure</h3>
+          <p class="why">A shoe-mounted sensor that measures foot motion and shoelace tension, used here to estimate how hard the body is working, in metabolic equivalents (METs), across activities from sedentary to vigorous.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>Co-designed the STM32L476 hardware and firmware: load cell plus 9-axis IMU (magnetometer not recorded) at 512 Hz, interrupt- and DMA-driven acquisition, synchronized timestamps, and real-time BLE streaming.</li>
+            <li>Leads the energy-expenditure study: 12 adults, 14 activities from sedentary to vigorous, referenced breath by breath against Cosmed K5 indirect calorimetry.</li>
+            <li>The reference convolutional model estimated METs in participants it had never seen with a mean absolute error of 0.614 MET (Lin's concordance 0.904).</li>
+          </ul>
+        </div>
+        <details class="more">
+          <summary>Engineering detail</summary>
+          <ul>
+            <li>Three modeling arms in Python and PyTorch on identical leave-one-subject-out folds: TSFEL features with nested feature selection and a least-squares head; a two-foot dilated residual CNN; and a Rank-N-Contrast pretrained encoder with a linear readout.</li>
+            <li>Every fitted stage (scaling, imputation, rank reduction, standardization, correlation pruning, feature selection) is refit inside each fold on training participants only. Network width and training length are chosen in a nested inner loop that never sees the held-out participant.</li>
+            <li>Mean absolute percentage error 18.3 %; Bland-Altman bias −0.071 MET (95 % limits −1.68 to +1.54); 71.8 % agreement in intensity category (weighted kappa 0.71), over activities spanning 0.8–9.8 MET.</li>
+            <li>The contrastive arm did not improve on the reference model and is reported as a null result after a pre-specified convergence diagnostic.</li>
+            <li>Results are reported per bout rather than per window, with participant-clustered uncertainty, and benchmarked against models that use no sensor data. Manuscripts in preparation.</li>
+            <li>MATLAB signal-processing pipelines for filtering, normalization and multi-resolution feature extraction from synchronized IMU and load-cell data, used in the sit-to-stand and balance-assessment studies.</li>
+          </ul>
+        </details>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>Co-designer, then project lead</dd></div>
+            <div><dt>Dates</dt><dd>2021 – ongoing</dd></div>
+            <div><dt>Funding</dt><dd>NSF 1734501</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>STM32L476</li><li>DMA</li><li>BLE</li><li>MPU-9250 IMU (no magnetometer)</li><li>HX711</li><li>Python</li><li>PyTorch</li></ul></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- Sit-to-stand -->
+      <article class="part" id="p-sist">
+        <header>
+          <h3>Sit-to-stand detection in older adults</h3>
+          <p class="why">Detects when an older adult stands up from a chair and how long it takes, using the Smart Lacelock shoe sensor, as part of mobility assessment.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>First-authored a deep-learning pipeline on data from 16 community-dwelling older adults, checked against 110 video-audited transitions.</li>
+            <li>Compared five models under leave-one-participant-out validation; the selected configuration reached a pooled event F1 of 0.787 (95 % CI 0.708–0.853).</li>
+            <li>Removing the shoelace-tension channels lowered each network's F1 by 0.051 to 0.187, showing what the load cell adds.</li>
+          </ul>
+        </div>
+        <details class="more">
+          <summary>Engineering detail</summary>
+          <ul>
+            <li>Models: 1D CNN, CNN-BiLSTM, 1D U-Net segmentation network, and two late-fusion ensembles.</li>
+            <li>Training epoch, threshold, ensemble rule and configuration were chosen inside every fold on three inner-validation participants only, with assertions verifying the sets were disjoint.</li>
+            <li>Showed that the evaluation grid alone moves an unchanged model's F1 by 0.077, more than the 0.035 separating the four leading models, so window-level scores cannot rank them.</li>
+            <li>A feature-based pipeline (2,856 features per window, mRMR selection, five learner families) reached F1 0.695, below every deep model.</li>
+            <li>Audited annotations against 60 fps video, corrected per-participant clock offsets of 0.35–5.31 s, and reported the post-hoc grid maximum beside the selected configuration to quantify selection bias.</li>
+          </ul>
+        </details>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>First author</dd></div>
+            <div><dt>Status</dt><dd>Preprint, 2026</dd></div>
+            <div><dt>Funding</dt><dd>NSF 1734501</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>Python</li><li>PyTorch</li><li>TSFEL</li><li>pytest</li></ul></dd></div>
+            <div><dt>Links</dt><dd class="part-links"><a href="https://arxiv.org/abs/2604.00175">arXiv preprint</a><a href="https://github.com/mdrafiislam/smart_lacelock_sist">Code</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- Vision -->
+      <article class="part" id="p-vision">
+        <header>
+          <h3>Vision-based stair intent recognition</h3>
+          <p class="why">Recognizes from first-person video whether a person is about to climb stairs, at least two steps before the transition, for intent recognition in wearable robots and lower-limb prostheses.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>First-authored a YOLOv5 plus gradient-boosting system that reached 97.69 % recognition of stair engagement versus avoidance.</li>
+            <li>Built and annotated the dataset: 12,187 staircase images and 375 approach videos across 25 staircases.</li>
+          </ul>
+        </div>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>First author, lead developer</dd></div>
+            <div><dt>Dates</dt><dd>2022 – 2023</dd></div>
+            <div><dt>Funding</dt><dd>NSF 1734501</dd></div>
+            <div><dt>Paper</dt><dd><a href="https://doi.org/10.3390/s23115355">Sensors, 2023</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== VALIDATION -->
+<section id="validation" aria-labelledby="val-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="val-h">How I check the work</h2>
+      <p>Most of my projects end in a question of whether the device and its data can be trusted. These are the checks I run.</p>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3>Devices and firmware</h3>
+        <ul>
+          <li>Fault injection: deliberately corrupted a known-good log file to confirm the pipeline detects and reports each fault.</li>
+          <li>Multi-device characterization: 70+ devices on an electromechanical test fixture.</li>
+          <li>24-hour validation protocol: exposed 17 electromagnetic false positives, removed with a 1.0 s minimum-duration filter.</li>
+          <li>Manual regression runs of the validation suite after firmware changes.</li>
+          <li>Output consistency checks between a released executable and its source scripts.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Data and models</h3>
+        <ul>
+          <li>Participant-independent testing: models are scored on people they never saw in training.</li>
+          <li>Leakage control: every preprocessing and selection step is refit inside each fold.</li>
+          <li>Model choices made on inner-validation participants only, never on the test participant.</li>
+          <li>Event- and bout-level metrics, because window-level scores can mislead.</li>
+          <li>Null results reported as null results.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== SKILLS -->
+<section id="skills" aria-labelledby="skills-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="skills-h">Skills</h2>
+      <p>Levels are stated where they apply.</p>
+    </div>
+    <div class="skills">
+      <div class="skill"><h3>Embedded firmware</h3><p>Bare-metal C, C++, interrupt-driven architecture, DMA, low-power design, timing-critical control, 64-bit extended POSIX timestamping, SPI flash logging, binary log format design, BLE DFU</p></div>
+      <div class="skill"><h3>Microcontrollers</h3><p>STM32 (STM32L476, STM32WB5MMG), MSP430 (MSP430G2433), nRF52832, ESP32</p></div>
+      <div class="skill"><h3>RTOS</h3><p>FreeRTOS <em>(basic)</em>, Zephyr <em>(familiar)</em></p></div>
+      <div class="skill"><h3>Interfaces and protocols</h3><p>SPI (master and slave), I2C, UART, ADC, GPIO, USB (CDC, MSC, DFU), Bluetooth Low Energy (GATT, GAP, DFU)</p></div>
+      <div class="skill"><h3>Hardware bring-up and debug</h3><p>Oscilloscope signal inspection, JTAG and SWD debugging, hand soldering and board rework, PCB modification, schematic revision, sensor calibration, mixed-signal bring-up</p></div>
+      <div class="skill"><h3>Test and characterization</h3><p>Multi-device characterization campaigns, electromechanical test fixtures, unattended multi-day logging, regression validation after firmware changes, binary log decoding and verification</p></div>
+      <div class="skill"><h3>Sensing and signal processing</h3><p>IMUs, load cells, thermistors, capacitive touch, electromagnetic sensing, sensor fusion; filter design, FIR anti-alias filtering, zero-phase filtering and decimation, feature extraction, multi-stream timestamp synchronization</p></div>
+      <div class="skill"><h3>Machine learning</h3><p>PyTorch, TensorFlow, Keras, scikit-learn; 1D CNNs, CNN-BiLSTM, 1D U-Net, dilated residual CNNs, Rank-N-Contrast, YOLOv5, XGBoost, LightGBM, random forest</p></div>
+      <div class="skill"><h3>Validation and statistics</h3><p>Leave-one-subject-out and nested cross-validation, per-fold refitting, Bland-Altman, Lin's concordance, Friedman and Holm-corrected Wilcoxon tests, bootstrap confidence intervals</p></div>
+      <div class="skill"><h3>Languages and tools</h3><p>C, C++, Python, MATLAB; Git, STM32CubeIDE, Code Composer Studio, Segger Embedded Studio, EasyPC, Autodesk Fusion 360; Claude Code and Codex in daily practice</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== EXPERIENCE -->
+<section id="experience" aria-labelledby="exp-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="exp-h">Experience and education</h2>
+    </div>
+    <ol class="timeline">
+      <li>
+        <div class="when">January 2021 – present</div>
+        <div>
+          <h3>Graduate Research Assistant</h3>
+          <p class="where">The University of Alabama, Department of Electrical and Computer Engineering</p>
+          <p>Embedded firmware, hardware test infrastructure and sensor data systems across NSF- and NIH-funded wearable device programs.</p>
+          <ul>
+            <li>Taught surface-mount soldering to about 7 undergraduates on Capstone Design teams (Fall 2025, Spring 2026) and helped them debug microcontroller code and circuit boards.</li>
+            <li>Trained two undergraduates in vape device lifecycle testing; working with a third on Bluetooth Low Energy integration for a wearable food intake monitor.</li>
+            <li>Trained the clinicians and clinical researchers who collected data in the University of Minnesota sit-to-stand study and the FRIENDS study to use the sensors and the data-collection GUI.</li>
+            <li>Reviews lab colleagues' code, manually and with Claude Code and Codex.</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="when">March 2018 – December 2020</div>
+        <div>
+          <h3>Lecturer</h3>
+          <p class="where">Premier University, Chittagong, Bangladesh, Department of Electrical and Electronic Engineering</p>
+          <p>Taught Digital Signal Processing and Control Systems. Supervised two undergraduate student groups' final thesis projects.</p>
+        </div>
+      </li>
+      <li>
+        <div class="when">Expected December 2026</div>
+        <div>
+          <h3>PhD, Electrical Engineering</h3>
+          <p class="where">The University of Alabama</p>
+          <p>Dissertation topic: Sensor-Based Human Movement Analysis. Advisor: Professor Edward Sazonov.</p>
+        </div>
+      </li>
+      <li>
+        <div class="when">May 2026</div>
+        <div>
+          <h3>MS, Electrical Engineering</h3>
+          <p class="where">The University of Alabama</p>
+        </div>
+      </li>
+      <li>
+        <div class="when">November 2017</div>
+        <div>
+          <h3>BSc, Electrical and Electronic Engineering</h3>
+          <p class="where">Chittagong University of Engineering and Technology, Bangladesh</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- =============================================================== RESEARCH -->
+<section id="research" aria-labelledby="res-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="res-h">For research committees</h2>
+      <p>My research uses multimodal wearable sensing, embedded systems, signal processing and machine learning to measure human movement, energy expenditure and health behaviors objectively in the real world. The full record is in the <a href="cv/Md_Rafi_Islam_CV_Academic.pdf">academic CV</a>.</p>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3>Research interests</h3>
+        <ul>
+          <li>Multimodal wearable sensing and sensor fusion</li>
+          <li>Embedded systems for physiological and behavioral measurement</li>
+          <li>Free-living energy expenditure estimation and indirect calorimetry reference methods</li>
+          <li>Human movement, gait and mobility assessment</li>
+          <li>Machine learning for health behavior measurement under participant-independent validation</li>
+          <li>Intent detection for lower-limb prostheses and wearable robotics</li>
+          <li>Objective measurement of tobacco and nicotine product use</li>
+          <li>Reproducible, open-source research software</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Service, funding and recognition</h3>
+        <ul>
+          <li>Peer reviewer, 6 manuscripts: IEEE EMBS (4), IEEE Journal of Biomedical and Health Informatics (1), IEEE Sensors Journal (1).</li>
+          <li>Research personnel on NSF Grant No. 1734501 and NIH/NCI Award No. R01CA266170.</li>
+          <li>Poster Presentation Competition, 2nd place, The University of Alabama, 2023 and 2024.</li>
+          <li>Graduate Research Assistantship with tuition support, 2021 – present.</li>
+          <li>Taught Digital Signal Processing and Control Systems at Premier University, 2018 – 2020.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =============================================================== PUBLICATIONS -->
+<section id="publications" aria-labelledby="pub-h">
+  <div class="wrap pubs">
+    <div class="section-head">
+      <h2 id="pub-h">Publications</h2>
+      <p>5 peer-reviewed journal papers, 5 peer-reviewed conference papers and 1 book chapter, listed separately from work under review.</p>
+    </div>
+
+    <div class="metrics" id="metrics" hidden>
+      <span><span class="m" id="m-cit"></span><span class="k">citations</span></span>
+      <span><span class="m" id="m-h"></span><span class="k">h-index</span></span>
+      <span><span class="m" id="m-i10"></span><span class="k">i10-index</span></span>
+      <small>From <a href="https://scholar.google.com/citations?user=sG1AczMAAAAJ">Google Scholar</a>, last checked <span id="m-date"></span>.</small>
+    </div>
+    <p class="note" id="metrics-fallback">Citation counts are on <a href="https://scholar.google.com/citations?user=sG1AczMAAAAJ">Google Scholar</a>.</p>
+
+    <h3>Peer-reviewed journal papers <span class="count">5</span></h3>
+    <ol>
+      <li>Pranto SI, Fassler B, <span class="me">Islam MR</span>, Schenkel A, Hawk LW, Sazonov E. FRIENDS GUI: A graphical user interface for data collection and visualization of vaping behavior from a passive vaping monitor. <span class="venue">Journal of Open Research Software</span>, 14(1), 24, 2026. <a href="https://doi.org/10.5334/jors.613">doi:10.5334/jors.613</a></li>
+      <li><span class="me">Islam MR</span>, Shen X, Sazonov E. Sensors and Machine Learning Methods for Intent Detection in Lower-Limb Prosthetic Devices: A Review. <span class="venue">IEEE Sensors Journal</span>, 25(12), 21054–21066, 2025. <a href="https://doi.org/10.1109/JSEN.2025.3565195">doi:10.1109/JSEN.2025.3565195</a> <span class="pill">First author</span></li>
+      <li>Haque MR, <span class="me">Islam MR</span>, Sazonov E, Shen X. Swing-phase detection of locomotive mode transitions for smooth multi-functional robotic lower-limb prosthesis control. <span class="venue">Frontiers in Robotics and AI</span>, 11, 2024. <a href="https://doi.org/10.3389/frobt.2024.1267072">doi:10.3389/frobt.2024.1267072</a></li>
+      <li><span class="me">Islam MR</span>, Haque MR, Imtiaz MH, Shen X, Sazonov E. Vision-Based Recognition of Human Motion Intent during Staircase Approaching. <span class="venue">Sensors</span>, 23, 2023. <a href="https://doi.org/10.3390/s23115355">doi:10.3390/s23115355</a> <span class="pill">First author</span></li>
+      <li>Haque MR, <span class="me">Islam MR</span>, Bassiri Z, Martelli D, Sazonov E, Shen X. Smart Lacelock: A Novel Shoelace Tensioning Device for Human Motion Sensing. <span class="venue">IEEE Sensors Journal</span>, 22, 18349–18358, 2022. <a href="https://doi.org/10.1109/JSEN.2022.3197890">doi:10.1109/JSEN.2022.3197890</a></li>
+    </ol>
+
+    <h3>Peer-reviewed conference papers <span class="count">5</span></h3>
+    <ol>
+      <li>Haque MR, <span class="me">Islam MR</span>, Choma E, Hayes S, McMahon S, Sazonov E, Shen X. Smart Lacelock Sensor for the Balance Assessment of Community-Dwelling Older People. <span class="venue">45th Annual International Conference of the IEEE Engineering in Medicine and Biology Society (EMBC)</span>, 2023. <a href="https://doi.org/10.1109/EMBC40787.2023.10340165">doi:10.1109/EMBC40787.2023.10340165</a></li>
+      <li>Islam A, Himu EA, Amin NB, Kaoser MS, Abrar F, <span class="me">Islam MR</span>. Pulmonary Artery Pressure Prediction Based On Three Physiological And Seven ECG Signal Features. <span class="venue">IEEE 3rd Global Conference for Advancement in Technology (GCAT)</span>, 1–5, 2022. <a href="https://doi.org/10.1109/GCAT55367.2022.9972058">doi:10.1109/GCAT55367.2022.9972058</a></li>
+      <li><span class="me">Islam MR</span>, Pavel SR, Tunaz SA. Neurodegenerative Disease Classification Using Gait Signal Features and Random Forest Classifier. <span class="venue">International Conference on Electrical Information and Communication Technology (EICT)</span>, 2019. <a href="https://doi.org/10.1109/EICT48899.2019.9068822">doi:10.1109/EICT48899.2019.9068822</a> <span class="pill">First author</span></li>
+      <li>Pavel SR, <span class="me">Islam MR</span>, Siddiqee AM. Fetal arrhythmia detection using fetal ECG signal. <span class="venue">International Conference on Telecommunications and Photonics (ICTP)</span>, 2019. <a href="https://doi.org/10.1109/ICTP48844.2019.9041789">doi:10.1109/ICTP48844.2019.9041789</a></li>
+      <li>Bhattacharjee A, <span class="me">Islam MR</span>, Ullah MA. Weather Independent Positioning of MS Using Power Slope Patterning Algorithm via One BS. <span class="venue">International Conference on Electrical, Computer and Communication Engineering (ECACE)</span>, 2019. <a href="https://doi.org/10.1109/ECACE.2019.8678919">doi:10.1109/ECACE.2019.8678919</a></li>
+    </ol>
+
+    <h3>Book chapter <span class="count">1</span></h3>
+    <ol>
+      <li><span class="me">Islam MR</span>, Li S. Metaverse Security: Principles and Experiments. In <span class="venue">Metaverse Platform Implementation</span>, 131–149. CRC Press, 2025. <a href="https://doi.org/10.1201/9781032663609">doi:10.1201/9781032663609</a> <span class="pill">First author</span></li>
+    </ol>
+
+    <h3>Under review and preprints <span class="count">not yet peer reviewed</span></h3>
+    <ol>
+      <li>Sazonov E, Fassler B, <span class="me">Islam MR</span>, Schenkel A, Hossain D, Tiffany ST, Hawk LW. Vaping with FRIENDS: Flexible Robust Instrumentation of Electronic Nicotine Delivery Systems. <span class="venue">IEEE Sensors Journal</span>, under review, 2026.</li>
+      <li><span class="me">Islam MR</span>, Haque MR, Choma E, Hayes S, McMahon S, Shen X, Sazonov E. Sit-to-Stand Transitions Detection and Duration Measurement Using Smart Lacelock Sensor. <span class="venue">arXiv preprint</span> arXiv:2604.00175, 2026. <a href="https://arxiv.org/abs/2604.00175">arxiv.org/abs/2604.00175</a> <span class="pill">First author</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- =============================================================== CONTACT -->
+<section id="contact" aria-labelledby="contact-h">
+  <div class="wrap">
+    <div class="contact">
+      <h2 id="contact-h">Get in touch</h2>
+      <p>I am looking for embedded systems, firmware and wearable sensing roles, and postdoctoral research positions, starting January 2027.</p>
+      <a class="email" href="mailto:md_rafi_islam@yahoo.com">md_rafi_islam@yahoo.com</a>
+      <div class="actions">
+        <a class="btn primary" href="cv/Md_Rafi_Islam_Resume_Industry.pdf" download>Download industry résumé</a>
+        <a class="btn" href="cv/Md_Rafi_Islam_CV_Academic.pdf" download>Download academic CV</a>
+      </div>
+      <p class="links" style="margin:0">
+        <a href="https://github.com/mdrafiislam">GitHub</a>
+        <a href="https://www.linkedin.com/in/md-rafi-islam">LinkedIn</a>
+        <a href="https://scholar.google.com/citations?user=sG1AczMAAAAJ">Google Scholar</a>
+        <a href="https://orcid.org/0000-0002-2180-5006">ORCID 0000-0002-2180-5006</a>
+      </p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="year">2026</span> Md Rafi Islam</span>
+    <button class="theme-toggle" id="theme-toggle" type="button">Switch to dark theme</button>
+  </div>
+</footer>
+
+<script>
+/* ---------- Decorative signal trace (generated, not real data) ---------- */
+(function () {
+  var svg = document.getElementById('trace');
+  if (!svg) return;
+  var NS = 'http://www.w3.org/2000/svg', W = 1120, H = 120;
+  function path(fn, cls) {
+    var d = '';
+    for (var x = 0; x <= W; x += 4) d += (x ? 'L' : 'M') + x + ' ' + fn(x).toFixed(1);
+    var p = document.createElementNS(NS, 'path');
+    p.setAttribute('d', d); p.setAttribute('class', cls);
+    svg.appendChild(p);
+    return p;
+  }
+  [30, 60, 90].forEach(function (y) {
+    var l = document.createElementNS(NS, 'line');
+    l.setAttribute('x1', 0); l.setAttribute('x2', W); l.setAttribute('y1', y); l.setAttribute('y2', y);
+    l.setAttribute('class', 'grid'); svg.appendChild(l);
+  });
+  // A gait-like waveform: periodic heel strikes over a slow baseline.
+  var a = path(function (x) {
+    var t = x / W * 7, ph = t % 1;
+    var strike = Math.exp(-Math.pow((ph - 0.18) / 0.035, 2)) * 34 - Math.exp(-Math.pow((ph - 0.27) / 0.05, 2)) * 14;
+    return 64 - strike - 8 * Math.sin(t * 2 * Math.PI) * 0.6 + 3 * Math.sin(x / 13);
+  }, 't1 draw');
+  var b = path(function (x) {
+    var t = x / W * 7, ph = (t + 0.5) % 1;
+    return 92 - Math.exp(-Math.pow((ph - 0.3) / 0.12, 2)) * 22 + 2 * Math.sin(x / 9);
+  }, 't2 draw');
+  [a, b].forEach(function (p) {
+    var len = Math.ceil(p.getTotalLength ? p.getTotalLength() : 3000);
+    p.style.setProperty('--len', len);
+  });
+})();
+
+/* ---------- Theme toggle (remembered per browser when storage allows) ---------- */
+(function () {
+  var root = document.documentElement, btn = document.getElementById('theme-toggle');
+  function current() {
+    return root.getAttribute('data-theme') ||
+      (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  }
+  function label() { btn.textContent = current() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'; }
+  try { var saved = localStorage.getItem('theme'); if (saved) root.setAttribute('data-theme', saved); } catch (e) {}
+  label();
+  btn.addEventListener('click', function () {
+    var next = current() === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    try { localStorage.setItem('theme', next); } catch (e) {}
+    label();
+  });
+  document.getElementById('year').textContent = new Date().getFullYear();
+})();
+
+/* ---------- Google Scholar figures, refreshed daily by a GitHub Action ---------- */
+(function () {
+  var sources = [
+    'https://raw.githubusercontent.com/mdrafiislam/mdrafiislam.github.io/main/data/citations.json',
+    'data/citations.json'
+  ];
+  function show(d) {
+    if (!d || typeof d.citations !== 'number') return false;
+    document.getElementById('m-cit').textContent = d.citations;
+    document.getElementById('m-h').textContent = d.h_index;
+    document.getElementById('m-i10').textContent = d.i10_index;
+    var dt = new Date((d.checked || d.updated) + 'T12:00:00Z');
+    document.getElementById('m-date').textContent = isNaN(dt) ? (d.checked || d.updated) :
+      dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('metrics').hidden = false;
+    document.getElementById('metrics-fallback').hidden = true;
+    return true;
+  }
+  function tryNext(i) {
+    if (i >= sources.length || !window.fetch) return;
+    fetch(sources[i], { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .then(function (d) { if (!show(d)) throw 0; })
+      .catch(function () { tryNext(i + 1); });
+  }
+  tryNext(0);
+})();
+
+/* ---------- Highlight the current section in the nav ---------- */
+(function () {
+  if (!('IntersectionObserver' in window)) return;
+  var links = {};
+  document.querySelectorAll('.nav a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting && links[e.target.id]) {
+        Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
+        links[e.target.id].setAttribute('aria-current', 'true');
+      }
+    });
+  }, { rootMargin: '-40% 0px -55% 0px' });
+  document.querySelectorAll('main section[id]').forEach(function (s) { io.observe(s); });
+})();
+</script>
+</body>
+</html>
