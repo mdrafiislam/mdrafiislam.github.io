@@ -9,6 +9,33 @@
 <meta property="og:description" content="Firmware, hardware bring-up, and validated sensor data for wearable devices. Available January 2027.">
 <meta property="og:image" content="https://mdrafiislam.github.io/assets/rafi.jpg">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://mdrafiislam.github.io/">
+<meta property="og:image:alt" content="Portrait of Md Rafi Islam">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Md Rafi Islam | Embedded Systems and Wearable Sensing">
+<meta name="twitter:description" content="Firmware, hardware bring-up, and validated sensor data for wearable devices. Available January 2027.">
+<link rel="canonical" href="https://mdrafiislam.github.io/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Md Rafi Islam",
+  "jobTitle": "Embedded Systems Engineer",
+  "url": "https://mdrafiislam.github.io/",
+  "image": "https://mdrafiislam.github.io/assets/rafi.jpg",
+  "email": "mailto:md_rafi_islam@yahoo.com",
+  "alumniOf": [
+    { "@type": "CollegeOrUniversity", "name": "The University of Alabama" },
+    { "@type": "CollegeOrUniversity", "name": "Chittagong University of Engineering and Technology" }
+  ],
+  "sameAs": [
+    "https://github.com/mdrafiislam",
+    "https://www.linkedin.com/in/md-rafi-islam",
+    "https://scholar.google.com/citations?user=sG1AczMAAAAJ",
+    "https://orcid.org/0000-0002-2180-5006"
+  ]
+}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d5c45'/%3E%3Cpath d='M4 20h6l3-9 4 14 3-9h8' fill='none' stroke='%23e0a458' stroke-width='2.4' stroke-linejoin='round' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -100,10 +127,26 @@ li::marker { color: var(--copper); }
   padding: 6px 10px; border-radius: 6px; font-size: 0.95rem;
 }
 .nav a:hover, .nav a[aria-current="true"] { color: var(--ink); background: var(--row); }
+.menu-btn { display: none; }
 @media (max-width: 760px) {
   .topbar .wrap { gap: 12px; }
   .brand { display: none; }
   .nav { margin-left: 0; }
+  /* With JavaScript: a Menu button and a vertical dropdown replace the scrolling nav. */
+  .js-menu .brand { display: block; }
+  .js-menu .menu-btn {
+    display: inline-flex; align-items: center; margin-left: auto; min-height: 40px;
+    padding: 6px 14px; border: 1px solid var(--rule); border-radius: 6px;
+    background: var(--surface); color: var(--ink); font: inherit; font-weight: 600; cursor: pointer;
+  }
+  .js-menu .nav {
+    display: none; position: absolute; top: 60px; right: 16px; z-index: 25;
+    flex-direction: column; gap: 2px; min-width: 200px; padding: 6px; overflow: visible;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 10px;
+    box-shadow: 0 8px 24px rgb(0 0 0 / 0.14);
+  }
+  .js-menu .nav.open { display: flex; }
+  .js-menu .nav a { padding: 10px 12px; font-size: 1rem; }
 }
 
 /* ------------------------------------------------------------------
@@ -124,6 +167,7 @@ li::marker { color: var(--copper); }
   padding: 10px 14px; border-left: 3px solid var(--copper); background: var(--surface);
 }
 .availability strong { font-weight: 700; }
+.hero .seeking { margin: -0.6em 0 1.4em; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .btn {
   display: inline-flex; align-items: center; gap: 8px; min-height: 44px;
@@ -147,6 +191,9 @@ li::marker { color: var(--copper); }
   .trace .t2.draw { animation-delay: .5s; }
 }
 @keyframes draw { to { stroke-dashoffset: 0; } }
+@media (min-width: 721px) {
+  .trace { height: 56px; margin: 24px 0; }
+}
 
 /* ------------------------------------------------------------------
    Sections
@@ -195,6 +242,11 @@ section { padding: clamp(48px, 7vw, 88px) 0 0; }
 .tags { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .tags li { margin: 0; padding: 2px 9px; border: 1px solid var(--rule); border-radius: 999px; font-size: 0.85rem; color: var(--ink-2); }
 .part-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.shot { margin: 18px 0 4px; max-width: 560px; }
+.shot img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+.shot figcaption { margin-top: 6px; font-size: 0.9rem; color: var(--ink-2); }
+.shot.narrow { max-width: 268px; }
+#validation .shot { margin-top: 22px; }
 details.more { grid-column: 1; margin-top: 4px; align-self: start; }
 details.more summary {
   cursor: pointer; font-weight: 600; color: var(--board); list-style: none;
@@ -228,6 +280,7 @@ details.more[open] summary { margin-bottom: 6px; }
 .timeline .when { color: var(--ink-2); font-size: 0.95rem; padding-top: 2px; }
 .timeline h3 { font-size: 1.1rem; }
 .timeline .where { color: var(--ink-2); margin: 2px 0 8px; }
+.timeline .where + .where { margin-top: -6px; }
 .timeline ul { margin-top: 4px; }
 .timeline ul li { margin: 0.35em 0; }
 @media (max-width: 640px) { .timeline > li { grid-template-columns: 1fr; } }
@@ -276,13 +329,12 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
 <header class="topbar">
   <div class="wrap">
     <a class="brand" href="#top">Md Rafi Islam</a>
-    <nav class="nav" aria-label="Sections">
+    <button class="menu-btn" id="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav class="nav" id="site-nav" aria-label="Sections">
       <a href="#specs">Results</a>
       <a href="#work">Projects</a>
-      <a href="#validation">Validation</a>
       <a href="#skills">Skills</a>
       <a href="#experience">Experience</a>
-      <a href="#research">Research</a>
       <a href="#publications">Publications</a>
       <a href="#contact">Contact</a>
     </nav>
@@ -297,8 +349,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <div>
         <h1>Md Rafi Islam</h1>
         <p class="role">Embedded systems engineer building firmware, hardware, and validated data pipelines for wearable sensors.</p>
-        <p class="lede">PhD candidate in Electrical Engineering at The University of Alabama, with five years of experience building firmware, hardware validation workflows and sensor data pipelines for multi-sensor wearables. Bare-metal C across three microcontroller families (STM32 Cortex-M4, MSP430, nRF52832), owning the work end to end: schematic revision and board bring-up, firmware and Bluetooth Low Energy, then checking that the data the device produces is right.</p>
-        <p class="availability"><span><strong>Available January 2027</strong></span><span>PhD expected December 2026</span><span>Tuscaloosa, AL</span></p>
+        <p class="lede">PhD candidate in Electrical Engineering at The University of Alabama. Since 2021 I have built firmware, hardware validation workflows and sensor data pipelines for multi-sensor wearables in NSF- and NIH-funded labs. Bare-metal C across three microcontroller families (STM32 Cortex-M4, MSP430, nRF52832), owning the work end to end: schematic revision and board bring-up, firmware and Bluetooth Low Energy, then checking that the data the device produces is right.</p>
+        <p class="availability"><span><strong>Available January 2027</strong></span><span>PhD expected December 2026</span><span>Tuscaloosa, AL · open to relocation within the US</span></p>
+        <p class="lede seeking">Seeking embedded systems, firmware and wearable sensing roles from January 2027.</p>
         <div class="actions">
           <a class="btn primary" href="cv/Md_Rafi_Islam_Resume_Industry.pdf" target="_blank" rel="noopener noreferrer">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0 5-5m-5 5-5-5M4 19h16"/></svg>
@@ -335,9 +388,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <caption>Key figures, with test conditions</caption>
         <thead><tr><th scope="col">Parameter</th><th scope="col">Value</th><th scope="col">Conditions</th></tr></thead>
         <tbody>
-          <tr><th scope="row">BLE current during transmission</th><td class="val">180 µA</td><td class="cond">Down from 1.6 mA; nRF52832 firmware (<a href="#p-ble">BLE low-power project</a>)</td></tr>
-          <tr><th scope="row">BLE current while advertising</th><td class="val">6 µA</td><td class="cond">Down from 50 µA; same firmware</td></tr>
-          <tr><th scope="row">BLE throughput</th><td class="val">8192 bit/s</td><td class="cond">nRF52832, optimizing GATT and GAP performance and DFU handling</td></tr>
+          <tr><th scope="row">Average current, BLE streaming</th><td class="val">180 µA</td><td class="cond">Down from 1.6 mA; nRF52832 SPI-to-BLE bridge firmware (<a href="#p-ble">BLE low-power project</a>)</td></tr>
+          <tr><th scope="row">Average current, BLE advertising</th><td class="val">6 µA</td><td class="cond">Down from 50 µA; 2 s advertising interval, same firmware</td></tr>
+          <tr><th scope="row">BLE application data rate</th><td class="val">8192 bit/s</td><td class="cond">Sensor stream over the Nordic UART Service, ATT MTU 247, nRF52832</td></tr>
           <tr><th scope="row">Event timestamp resolution</th><td class="val">≈30.5 µs</td><td class="cond">1/32768 s from a hardware timer; 64-bit extended POSIX time, MSP430G2433 (<a href="#p-friends">FRIENDS</a>)</td></tr>
           <tr><th scope="row">Unattended logging</th><td class="val">up to 10 days</td><td class="cond">Continuous free-living collection using low-power modes (FRIENDS)</td></tr>
           <tr><th scope="row">Timestamp-conversion drift</th><td class="val">&lt; 10 s over a full day</td><td class="cond">Timestamp conversion checked during FRIENDS validation</td></tr>
@@ -372,6 +425,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <li>Streams sensor samples over BLE GATT notifications at 20 Hz, logs to an SD card, and switches USB class at runtime so a host can read the card directly.</li>
             <li>Diagnosed and fixed a dual-core clock ownership fault that let the BLE core power down the USB clock.</li>
           </ul>
+          <figure class="shot">
+            <img src="assets/friends2-board.jpg" width="1600" height="674" alt="FRIENDS-2 custom STM32WB5MMG sensor board" loading="lazy" decoding="async">
+            <figcaption>FRIENDS-2 custom STM32WB5MMG sensor board</figcaption>
+          </figure>
         </div>
         <details class="more">
           <summary>Engineering detail</summary>
@@ -388,7 +445,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         </details>
         <aside>
           <dl>
-            <div><dt>Role</dt><dd>Lead developer, with Claude Code as AI pair programmer</dd></div>
+            <div><dt>Role</dt><dd>Sole developer (AI-assisted with Claude Code)</dd></div>
             <div><dt>Dates</dt><dd>January 2026 – present</dd></div>
             <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
             <div><dt>Stack</dt><dd><ul class="tags"><li>STM32WB5MMG</li><li>Cortex-M4 / M0+</li><li>Bare-metal C</li><li>FatFs</li><li>USB CDC / MSC / DFU</li><li>BLE GATT</li><li>Claude Code</li></ul></dd></div>
@@ -409,6 +466,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <li>Tested and documented 70+ e-cigarette devices on the VM-FRIENDS electromechanical vaping machine, and built the compatibility library that now covers 90+ devices and informs the puff-detection algorithms.</li>
             <li>Designed fault-injection tests for the data pipeline, and validated the open-source FRIENDS GUI to capture 99.46 % of actual puff duration.</li>
           </ul>
+          <figure class="shot">
+            <img src="assets/friends-device.jpg" width="1600" height="672" alt="FRIENDS wearable vaping monitor" loading="lazy" decoding="async">
+            <figcaption>FRIENDS wearable vaping monitor</figcaption>
+          </figure>
         </div>
         <details class="more">
           <summary>Engineering detail</summary>
@@ -429,7 +490,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <div><dt>Dates</dt><dd>2024 – ongoing</dd></div>
             <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
             <div><dt>Stack</dt><dd><ul class="tags"><li>MSP430G2433</li><li>Bare-metal C</li><li>SPI flash</li><li>UART</li><li>Python</li></ul></dd></div>
-            <div><dt>Links</dt><dd class="part-links"><a href="https://github.com/eszsonic/FRIENDSGUI" target="_blank" rel="noopener noreferrer">FRIENDS GUI code</a><a href="https://doi.org/10.5334/jors.613" target="_blank" rel="noopener noreferrer">GUI paper (JORS 2026)</a><span>Firmware: device paper under review, IEEE Sensors Journal</span><a href="https://claws.eng.ua.edu/research-projects/44-friends/299-friends-vape-library" target="_blank" rel="noopener noreferrer">Vape library</a></dd></div>
+            <div><dt>Links</dt><dd class="part-links"><a href="https://github.com/mdrafiislam/FRIENDS_2_MSP430" target="_blank" rel="noopener noreferrer">MSP430 firmware code</a><a href="https://github.com/eszsonic/FRIENDSGUI" target="_blank" rel="noopener noreferrer">FRIENDS GUI code</a><a href="https://doi.org/10.5334/jors.613" target="_blank" rel="noopener noreferrer">GUI paper (JORS 2026)</a><span>Firmware: device paper under review, IEEE Sensors Journal</span><a href="https://claws.eng.ua.edu/research-projects/44-friends/299-friends-vape-library" target="_blank" rel="noopener noreferrer">Vape library</a></dd></div>
           </dl>
         </aside>
       </article>
@@ -442,9 +503,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         </header>
         <div class="body">
           <ul class="did">
-            <li>Programmed the nRF52832 for BLE at 8192 bit/s, optimizing GATT and GAP performance and DFU handling.</li>
-            <li>Cut current during transmission from 1.6 mA to 180 µA, and while advertising from 50 µA to 6 µA.</li>
-            <li>Worked within the nRF52832's RAM limits during development, and built MATLAB tools for real-time BLE acquisition and visualization.</li>
+            <li>Wrote nRF52832 firmware (nRF5 SDK 17.1.0, SoftDevice S132) that bridges an SPI-slave sensor interface to a BLE peripheral over the Nordic UART Service, relaying 10-byte command payloads back to the SPI master.</li>
+            <li>Cut average current while streaming from 1.6 mA to 180 µA, and while advertising from 50 µA to 6 µA, using the DC/DC regulator, tuned connection and advertising intervals, and connection event length extension.</li>
+            <li>Raised the SoftDevice notification queue to 20 packets to buffer more data per connection interval, and moved RAM_START to 0x20004650 so the larger SoftDevice RAM region no longer overlapped the application.</li>
+            <li>Added over-the-air DFU (merged bootloader and application build pipeline, STARTDFU and STARTRST commands), the Device Information Service, and MATLAB tools for real-time BLE acquisition and visualization.</li>
           </ul>
         </div>
         <aside>
@@ -452,7 +514,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <div><dt>Role</dt><dd>Firmware developer</dd></div>
             <div><dt>Dates</dt><dd>2023 – 2024</dd></div>
             <div><dt>Funding</dt><dd>NSF 1734501</dd></div>
-            <div><dt>Stack</dt><dd><ul class="tags"><li>nRF52832</li><li>BLE GATT / GAP / DFU</li><li>Segger Embedded Studio</li><li>MATLAB</li></ul></dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>nRF52832</li><li>nRF5 SDK 17.1</li><li>SoftDevice S132</li><li>BLE NUS / DFU</li><li>Segger Embedded Studio</li><li>MATLAB</li></ul></dd></div>
             <div><dt>Code</dt><dd><a href="https://github.com/mdrafiislam/BLE_nRF52832" target="_blank" rel="noopener noreferrer">BLE_nRF52832</a></dd></div>
           </dl>
         </aside>
@@ -470,6 +532,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <li>Leads the energy-expenditure study: 12 adults, 14 activities from sedentary to vigorous, referenced breath by breath against Cosmed K5 indirect calorimetry.</li>
             <li>The reference convolutional model estimated METs in participants it had never seen with a mean absolute error of 0.614 MET (Lin's concordance 0.904).</li>
           </ul>
+          <figure class="shot narrow">
+            <img src="assets/lacelock-device.png" width="268" height="614" alt="Smart Lacelock shoe-mounted sensor" loading="lazy" decoding="async">
+            <figcaption>Smart Lacelock shoe-mounted sensor</figcaption>
+          </figure>
         </div>
         <details class="more">
           <summary>Engineering detail</summary>
@@ -563,8 +629,8 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <h3>Devices and firmware</h3>
         <ul>
           <li>Fault injection: deliberately corrupted a known-good log file to confirm the pipeline detects and reports each fault.</li>
-          <li>Multi-device characterization: 70+ devices on an electromechanical test fixture.</li>
-          <li>24-hour validation protocol: exposed 17 electromagnetic false positives, removed with a 1.0 s minimum-duration filter.</li>
+          <li>Multi-device characterization on an electromechanical test fixture (FRIENDS).</li>
+          <li>24-hour validation protocol with false-positive analysis and a minimum-duration filter (FRIENDS).</li>
           <li>Manual regression runs of the validation suite after firmware changes.</li>
           <li>Output consistency checks between a released executable and its source scripts.</li>
         </ul>
@@ -580,6 +646,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         </ul>
       </div>
     </div>
+    <figure class="shot">
+      <img src="assets/test-fixture.jpg" width="1600" height="533" alt="Electromechanical vaping machine used for multi-device characterization" loading="lazy" decoding="async">
+      <figcaption>Electromechanical vaping machine used for multi-device characterization</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -619,10 +689,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
           <p class="where">The University of Alabama, Department of Electrical and Computer Engineering</p>
           <p>Embedded firmware, hardware test infrastructure and sensor data systems across NSF- and NIH-funded wearable device programs.</p>
           <ul>
-            <li>Taught surface-mount soldering to about 7 undergraduates on Capstone Design teams (Fall 2025, Spring 2026) and helped them debug microcontroller code and circuit boards.</li>
+            <li>Taught surface-mount soldering to undergraduates on Capstone Design teams (Fall 2025, Spring 2026) and helped them debug microcontroller code and circuit boards.</li>
             <li>Trained two undergraduates in vape device lifecycle testing; working with a third on Bluetooth Low Energy integration for a wearable food intake monitor.</li>
             <li>Trained the clinicians and clinical researchers who collected data in the University of Minnesota sit-to-stand study and the FRIENDS study to use the sensors and the data-collection GUI.</li>
-            <li>Reviews lab colleagues' code, manually and with Claude Code and Codex.</li>
           </ul>
         </div>
       </li>
@@ -639,6 +708,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <div>
           <h3>PhD, Electrical Engineering</h3>
           <p class="where">The University of Alabama</p>
+          <p class="where">GPA 3.92</p>
           <p>Dissertation topic: Sensor-Based Human Movement Analysis. Advisor: Professor Edward Sazonov.</p>
         </div>
       </li>
@@ -647,6 +717,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         <div>
           <h3>MS, Electrical Engineering</h3>
           <p class="where">The University of Alabama</p>
+          <p class="where">GPA 3.92</p>
         </div>
       </li>
       <li>
@@ -657,41 +728,6 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         </div>
       </li>
     </ol>
-  </div>
-</section>
-
-<!-- =============================================================== RESEARCH -->
-<section id="research" aria-labelledby="res-h">
-  <div class="wrap">
-    <div class="section-head">
-      <h2 id="res-h">For research committees</h2>
-      <p>My research uses multimodal wearable sensing, embedded systems, signal processing and machine learning to measure human movement, energy expenditure and health behaviors objectively in the real world. The full record is in the <a href="cv/Md_Rafi_Islam_CV_Academic.pdf" target="_blank" rel="noopener noreferrer">academic CV</a>.</p>
-    </div>
-    <div class="cols">
-      <div class="panel">
-        <h3>Research interests</h3>
-        <ul>
-          <li>Multimodal wearable sensing and sensor fusion</li>
-          <li>Embedded systems for physiological and behavioral measurement</li>
-          <li>Free-living energy expenditure estimation and indirect calorimetry reference methods</li>
-          <li>Human movement, gait and mobility assessment</li>
-          <li>Machine learning for health behavior measurement under participant-independent validation</li>
-          <li>Intent detection for lower-limb prostheses and wearable robotics</li>
-          <li>Objective measurement of tobacco and nicotine product use</li>
-          <li>Reproducible, open-source research software</li>
-        </ul>
-      </div>
-      <div class="panel">
-        <h3>Service, funding and recognition</h3>
-        <ul>
-          <li>Peer reviewer, 6 manuscripts: IEEE EMBS (4), IEEE Journal of Biomedical and Health Informatics (1), IEEE Sensors Journal (1).</li>
-          <li>Research personnel on NSF Grant No. 1734501 and NIH/NCI Award No. R01CA266170.</li>
-          <li>Poster Presentation Competition, 2nd place, The University of Alabama, 2023 and 2024.</li>
-          <li>Graduate Research Assistantship with tuition support, 2021 – present.</li>
-          <li>Taught Digital Signal Processing and Control Systems at Premier University, 2018 – 2020.</li>
-        </ul>
-      </div>
-    </div>
   </div>
 </section>
 
@@ -742,12 +778,47 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
   </div>
 </section>
 
+<!-- =============================================================== RESEARCH -->
+<section id="research" aria-labelledby="res-h">
+  <div class="wrap">
+    <div class="section-head">
+      <h2 id="res-h">For research committees</h2>
+      <p>My research uses multimodal wearable sensing, embedded systems, signal processing and machine learning to measure human movement, energy expenditure and health behaviors objectively in the real world. The full record is in the <a href="cv/Md_Rafi_Islam_CV_Academic.pdf" target="_blank" rel="noopener noreferrer">academic CV</a>.</p>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3>Research interests</h3>
+        <ul>
+          <li>Multimodal wearable sensing and sensor fusion</li>
+          <li>Embedded systems for physiological and behavioral measurement</li>
+          <li>Free-living energy expenditure estimation and indirect calorimetry reference methods</li>
+          <li>Human movement, gait and mobility assessment</li>
+          <li>Machine learning for health behavior measurement under participant-independent validation</li>
+          <li>Intent detection for lower-limb prostheses and wearable robotics</li>
+          <li>Objective measurement of tobacco and nicotine product use</li>
+          <li>Reproducible, open-source research software</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>Service, funding and recognition</h3>
+        <ul>
+          <li>Peer reviewer, 6 manuscripts: IEEE EMBS (4), IEEE Journal of Biomedical and Health Informatics (1), IEEE Sensors Journal (1).</li>
+          <li>Research personnel on NSF Grant No. 1734501 and NIH/NCI Award No. R01CA266170.</li>
+          <li>Poster Presentation Competition, 2nd place, The University of Alabama, 2023 and 2024.</li>
+          <li>Graduate Research Assistantship with tuition support, 2021 – present.</li>
+          <li>Taught Digital Signal Processing and Control Systems at Premier University, 2018 – 2020.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- =============================================================== CONTACT -->
 <section id="contact" aria-labelledby="contact-h">
   <div class="wrap">
     <div class="contact">
       <h2 id="contact-h">Get in touch</h2>
-      <p>I am looking for embedded systems, firmware and wearable sensing roles, and postdoctoral research positions, starting January 2027.</p>
+      <p>I am looking for embedded systems, firmware and wearable sensing roles, and postdoctoral research positions, starting January 2027. Open to relocation within the US.</p>
       <a class="email" href="mailto:md_rafi_islam@yahoo.com">md_rafi_islam@yahoo.com</a>
       <div class="actions">
         <a class="btn primary" href="cv/Md_Rafi_Islam_Resume_Industry.pdf" target="_blank" rel="noopener noreferrer">Industry résumé (PDF)</a>
@@ -851,6 +922,28 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       .catch(function () { tryNext(i + 1); });
   }
   tryNext(0);
+})();
+
+/* ---------- Mobile menu (760px and below) ---------- */
+(function () {
+  var btn = document.getElementById('menu-btn'), nav = document.getElementById('site-nav');
+  if (!btn || !nav) return;
+  document.documentElement.classList.add('js-menu');
+  function isOpen() { return btn.getAttribute('aria-expanded') === 'true'; }
+  function setOpen(open, returnFocus) {
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    nav.classList.toggle('open', open);
+    if (!open && returnFocus) btn.focus();
+  }
+  btn.addEventListener('click', function () { setOpen(!isOpen()); });
+  nav.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen()) setOpen(false, true); });
+  document.addEventListener('click', function (e) {
+    if (isOpen() && !nav.contains(e.target) && !btn.contains(e.target)) setOpen(false);
+  });
+  var mq = window.matchMedia('(max-width: 760px)');
+  var reset = function () { setOpen(false); };
+  if (mq.addEventListener) mq.addEventListener('change', reset); else if (mq.addListener) mq.addListener(reset);
 })();
 
 /* ---------- Highlight the current section in the nav ---------- */
