@@ -246,6 +246,8 @@ section { padding: clamp(48px, 7vw, 88px) 0 0; }
 .shot img { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
 .shot figcaption { margin-top: 6px; font-size: 0.9rem; color: var(--ink-2); }
 .shot.narrow { max-width: 268px; }
+.shot.wide { max-width: 100%; }
+.shot video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
 #validation .shot { margin-top: 22px; }
 details.more { grid-column: 1; margin-top: 4px; align-self: start; }
 details.more summary {
@@ -570,6 +572,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <li>Compared five models under leave-one-participant-out validation; the selected configuration reached a pooled event F1 of 0.787 (95 % CI 0.708–0.853).</li>
             <li>Removing the shoelace-tension channels lowered each network's F1 by 0.051 to 0.187, showing what the load cell adds.</li>
           </ul>
+          <figure class="shot wide">
+            <a href="assets/SiSt_test.png" target="_blank" rel="noopener noreferrer"><img src="assets/SiSt_test.png" width="1600" height="1163" alt="Sit-to-stand detection on one participant's recording: z-scored right load-cell signal, model probability, predicted and annotated sit-to-stand events for two models" loading="lazy" decoding="async"></a>
+            <figcaption>Example recording from one participant: right load-cell signal (grey), model probability (blue), predicted sit-to-stand events (red) and annotated stands (green) for two models. Open the image for full size.</figcaption>
+          </figure>
         </div>
         <details class="more">
           <summary>Engineering detail</summary>
@@ -603,6 +609,12 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <li>First-authored a YOLOv5 plus gradient-boosting system that reached 97.69 % recognition of stair engagement versus avoidance.</li>
             <li>Built and annotated the dataset: 12,187 staircase images and 375 approach videos across 25 staircases.</li>
           </ul>
+          <figure class="shot wide">
+            <video controls muted playsinline preload="none" width="1280" height="720" poster="assets/vision-intent-poster.jpg" aria-label="Experiment sessions video: stair detection on first-person walking video">
+              <source src="assets/vision-intent-sessions.mp4" type="video/mp4">
+            </video>
+            <figcaption>Experiment sessions: YOLOv5 stair detection on first-person video, with the detected bounding-box area tracked frame by frame while climbing and while avoiding the stairs.</figcaption>
+          </figure>
         </div>
         <aside>
           <dl>
