@@ -461,41 +461,6 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
         </aside>
       </article>
 
-      <!-- Hall-effect evaluation -->
-      <article class="part" id="p-hall">
-        <header>
-          <h3>Low-power Hall-effect sensor evaluation and TMAG5253 test boards</h3>
-          <p class="why">A search for a lower-power, smaller replacement for the FRIENDS-2 magnetometer pair, weighing current and size against sensitivity.</p>
-        </header>
-        <div class="body">
-          <ul class="did">
-            <li>Evaluated 20 Hall-effect sensor part numbers (9 families from TI, Allegro, Infineon and Diodes), using a duty-cycled power model checked against TI's published table to within 0.5 %.</li>
-            <li>Selected and recommended the TI TMAG5253: about 98.9 % lower calculated current (470 to 5.2 µA for the pair at 20 Hz) and a 62 % smaller footprint, with the trade-off of an about 90x coarser minimum detectable field (about 115 versus 1.3 µT).</li>
-            <li>Designed two TMAG5253BA1 test boards in KiCad 10, had them fabricated by PCBWay, and assembled them.</li>
-          </ul>
-        </div>
-        <details class="more">
-          <summary>Engineering detail</summary>
-          <ul>
-            <li>Chose the BA1 variant for 8x higher sensitivity, about 13.4 µT per ADC count on a 12-bit ADC.</li>
-            <li>3-sensor board: three TMAG5253BA1 sensors on one shared ADC line, read one at a time through separate enable lines, with a custom 6-pad connector.</li>
-            <li>Single-sensor breakout: 12.7 × 15.24 mm with a 0.1 in header, designed to interface with an STM32L476 board.</li>
-            <li>Followed the datasheet: 0.1 µF decoupling, a 100 kΩ output pull-down, and a silkscreen mark on the sensing element.</li>
-            <li>Used datasheet evidence and a skin-depth calculation to show that the ground copper fill does not shield the sensor.</li>
-            <li>Found errors in the distributor's (DigiKey) part listings, and delivered a technical report and a comparison spreadsheet to Professor Edward Sazonov.</li>
-          </ul>
-        </details>
-        <aside>
-          <dl>
-            <div><dt>Role</dt><dd>Lead researcher/engineer</dd></div>
-            <div><dt>Dates</dt><dd>October 2026 – present</dd></div>
-            <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
-            <div><dt>Status</dt><dd>Recommendation delivered; test boards assembled, testing still to come</dd></div>
-            <div><dt>Stack</dt><dd><ul class="tags"><li>TI TMAG5253BA1</li><li>Hall-effect sensing</li><li>Power modeling</li><li>12-bit ADC</li><li>KiCad 10</li><li>PCBWay</li><li>STM32L476</li></ul></dd></div>
-          </dl>
-        </aside>
-      </article>
-
       <!-- FRIENDS -->
       <article class="part" id="p-friends">
         <header>
@@ -558,6 +523,41 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <div><dt>Funding</dt><dd>NSF 1734501</dd></div>
             <div><dt>Stack</dt><dd><ul class="tags"><li>nRF52832</li><li>nRF5 SDK 17.1</li><li>SoftDevice S132</li><li>BLE NUS / DFU</li><li>Segger Embedded Studio</li><li>MATLAB</li></ul></dd></div>
             <div><dt>Code</dt><dd><a href="https://github.com/mdrafiislam/BLE_nRF52832" target="_blank" rel="noopener noreferrer">BLE_nRF52832</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- Hall-effect evaluation -->
+      <article class="part" id="p-hall">
+        <header>
+          <h3>Low-power Hall-effect sensor evaluation and TMAG5253 test boards</h3>
+          <p class="why">A search for a lower-power, smaller replacement for the FRIENDS-2 magnetometer pair, weighing current and size against sensitivity.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>Evaluated 20 Hall-effect sensor part numbers (9 families from TI, Allegro, Infineon and Diodes), using a duty-cycled power model checked against TI's published table to within 0.5 %.</li>
+            <li>Selected and recommended the TI TMAG5253: about 98.9 % lower calculated current (470 to 5.2 µA for the pair at 20 Hz) and a 62 % smaller footprint, with the trade-off of an about 90x coarser minimum detectable field (about 115 versus 1.3 µT).</li>
+            <li>Designed two TMAG5253BA1 test boards in KiCad 10, had them fabricated by PCBWay, and assembled them.</li>
+          </ul>
+        </div>
+        <details class="more">
+          <summary>Engineering detail</summary>
+          <ul>
+            <li>Chose the BA1 variant for 8x higher sensitivity, about 13.4 µT per ADC count on a 12-bit ADC.</li>
+            <li>3-sensor board: three TMAG5253BA1 sensors on one shared ADC line, read one at a time through separate enable lines, with a custom 6-pad connector.</li>
+            <li>Single-sensor breakout: 12.7 × 15.24 mm with a 0.1 in header, designed to interface with an STM32L476 board.</li>
+            <li>Followed the datasheet: 0.1 µF decoupling, a 100 kΩ output pull-down, and a silkscreen mark on the sensing element.</li>
+            <li>Used datasheet evidence and a skin-depth calculation to show that the ground copper fill does not shield the sensor.</li>
+            <li>Found errors in the distributor's (DigiKey) part listings, and delivered a technical report and a comparison spreadsheet to Professor Edward Sazonov.</li>
+          </ul>
+        </details>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>Lead researcher/engineer</dd></div>
+            <div><dt>Dates</dt><dd>October 2026 – present</dd></div>
+            <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
+            <div><dt>Status</dt><dd>Recommendation delivered; test boards assembled, testing still to come</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>TI TMAG5253BA1</li><li>Hall-effect sensing</li><li>Power modeling</li><li>12-bit ADC</li><li>KiCad 10</li><li>PCBWay</li><li>STM32L476</li></ul></dd></div>
           </dl>
         </aside>
       </article>
