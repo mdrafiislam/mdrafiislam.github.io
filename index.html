@@ -313,13 +313,24 @@ footer { padding: 40px 0 56px; color: var(--ink-2); font-size: 0.9rem; }
 footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; }
 .theme-toggle { background: none; border: 1px solid var(--rule); color: var(--ink-2); border-radius: 6px; padding: 4px 10px; font: inherit; cursor: pointer; }
 
+/* Email chooser (mailto does nothing on computers without a default mail app) */
+.mail-pop { position: absolute; z-index: 50; width: min(320px, calc(100vw - 32px)); background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-radius: 10px; padding: 14px; box-shadow: 0 8px 24px rgba(21, 33, 29, 0.18); display: grid; gap: 10px; }
+.mail-pop[hidden] { display: none; }
+.mail-pop .addr { font-weight: 700; word-break: break-all; margin: 0; }
+.mail-pop .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.mail-pop .opts a, .mail-pop .opts button { display: block; text-align: center; padding: 8px 10px; border: 1px solid var(--rule); border-radius: 6px; background: var(--row); color: var(--ink); font: inherit; font-size: 0.92rem; text-decoration: none; cursor: pointer; }
+.mail-pop .opts a:hover, .mail-pop .opts button:hover { border-color: var(--board); }
+.mail-pop .opts .copy { grid-column: 1 / -1; background: var(--board); border-color: var(--board); color: var(--board-ink); font-weight: 600; }
+.mail-pop .status { margin: 0; font-size: 0.85rem; color: var(--ink-2); }
+.mail-pop .status:empty { display: none; }
+
 @media (max-width: 720px) {
   .hero-grid { grid-template-columns: 1fr; }
   .portrait { grid-row: 1; width: 132px; border-width: 4px; }
   .trace { height: 80px; }
 }
 @media print {
-  .topbar, .trace, .theme-toggle, details.more summary { display: none; }
+  .topbar, .trace, .theme-toggle, .mail-pop, details.more summary { display: none; }
   details.more > * { display: block; }
   body { background: #fff; }
 }
@@ -1045,6 +1056,74 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
     });
   }, { rootMargin: '-40% 0px -55% 0px' });
   document.querySelectorAll('main section[id]').forEach(function (s) { io.observe(s); });
+})();
+/* ---------- Email chooser: copy the address or open a webmail compose window ---------- */
+(function () {
+  var ADDR = 'md_rafi_islam@yahoo.com', enc = encodeURIComponent(ADDR);
+  var pop = document.createElement('div'), opener = null;
+  pop.className = 'mail-pop'; pop.id = 'mail-pop'; pop.hidden = true;
+  pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Email Md Rafi Islam');
+  pop.innerHTML =
+    '<p class="addr">' + ADDR + '</p>' +
+    '<div class="opts">' +
+      '<button type="button" class="copy">Copy email address</button>' +
+      '<a href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=' + enc + '" target="_blank" rel="noopener noreferrer">Gmail</a>' +
+      '<a href="https://outlook.live.com/mail/0/deeplink/compose?to=' + enc + '" target="_blank" rel="noopener noreferrer">Outlook</a>' +
+      '<a href="https://compose.mail.yahoo.com/?to=' + enc + '" target="_blank" rel="noopener noreferrer">Yahoo Mail</a>' +
+      '<a href="mailto:' + ADDR + '">Email app</a>' +
+    '</div>' +
+    '<p class="status" aria-live="polite"></p>';
+  document.body.appendChild(pop);
+  var status = pop.querySelector('.status'), copyBtn = pop.querySelector('.copy');
+
+  function place(el) {
+    var r = el.getBoundingClientRect(), w = pop.offsetWidth;
+    var left = Math.min(Math.max(16, r.left + window.scrollX), window.scrollX + document.documentElement.clientWidth - w - 16);
+    pop.style.left = left + 'px';
+    pop.style.top = (r.bottom + window.scrollY + 8) + 'px';
+  }
+  function open(el) {
+    opener = el; status.textContent = ''; copyBtn.textContent = 'Copy email address';
+    pop.hidden = false; place(el); el.setAttribute('aria-expanded', 'true');
+    copyBtn.focus({ preventScroll: true });
+    if (pop.getBoundingClientRect().bottom > window.innerHeight) pop.scrollIntoView({ block: 'nearest' });
+  }
+  function close(returnFocus) {
+    if (pop.hidden) return;
+    pop.hidden = true;
+    if (opener) { opener.setAttribute('aria-expanded', 'false'); if (returnFocus) opener.focus(); }
+  }
+  function fallbackCopy() {
+    var t = document.createElement('textarea');
+    t.value = ADDR; t.setAttribute('readonly', ''); t.style.position = 'fixed'; t.style.opacity = '0';
+    document.body.appendChild(t); t.select();
+    var ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(t); return ok;
+  }
+  function copied(ok) {
+    copyBtn.textContent = ok ? 'Copied' : 'Copy email address';
+    status.textContent = ok ? 'Email address copied to your clipboard.' : 'Copy failed. Select the address above and copy it.';
+  }
+  copyBtn.addEventListener('click', function () {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(ADDR).then(function () { copied(true); }, function () { copied(fallbackCopy()); });
+    } else { copied(fallbackCopy()); }
+  });
+  pop.addEventListener('click', function (e) { if (e.target.closest('a')) close(false); });
+
+  document.querySelectorAll('a[href^="mailto:"]').forEach(function (a) {
+    if (pop.contains(a)) return;
+    a.setAttribute('aria-haspopup', 'dialog'); a.setAttribute('aria-expanded', 'false'); a.setAttribute('aria-controls', 'mail-pop');
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (!pop.hidden && opener === a) close(false); else open(a);
+    });
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(true); });
+  document.addEventListener('click', function (e) {
+    if (!pop.hidden && !pop.contains(e.target) && !(opener && opener.contains(e.target))) close(false);
+  });
+  window.addEventListener('resize', function () { if (!pop.hidden && opener) place(opener); });
 })();
 </script>
 </body>
