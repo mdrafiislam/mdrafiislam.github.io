@@ -425,6 +425,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
           <ul class="did">
             <li>Developed the complete bare-metal C application firmware for a custom board on the STM32WB5MMG, splitting work between the Cortex-M4 application core and the Cortex-M0+ BLE core.</li>
             <li>Streams sensor samples over BLE GATT notifications at 20 Hz, logs to an SD card, and switches USB class at runtime so a host can read the card directly.</li>
+            <li>Compared four calibration methods for the two-magnetometer noise cancellation; a 3x3 least-squares sensor-to-sensor fit cut the error during board rotation from 4.4 to 1.0 µT RMS in 5-fold held-out validation, close to the pair's measured 0.78 µT noise floor.</li>
             <li>Diagnosed and fixed a dual-core clock ownership fault that let the BLE core power down the USB clock.</li>
           </ul>
           <figure class="shot">
@@ -436,6 +437,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
           <summary>Engineering detail</summary>
           <ul>
             <li>Dual LIS2MDL magnetometers over SPI at 20 Hz, computing per-sensor magnitude and a differential vector that cancels the Earth's field, with boot-time baseline zeroing.</li>
+            <li>Selected the LIS2MDL over the MEMSIC MMC5603NJ after testing the MMC5603NJ on an Arduino: lower unit cost and lower active current at matched noise (235 µA calculated versus 260 µA from the datasheet, at 20 Hz).</li>
+            <li>Calibration methods compared: fixed offset, sphere fit, ellipsoid fit with rotation alignment, and a 3x3 least-squares sensor-to-sensor fit, each scored by 5-fold held-out validation on a 271 s rotation recording, with zero stability checked across board positions and both sampling modes.</li>
+            <li>Traced 3x larger zero drift across board positions to a 20 % X/Y gain mismatch on one sensor (part tolerance ±7 %).</li>
+            <li>The 3x3 coefficients are fit offline and loaded onto the board over BLE commands; the firmware stores and applies them. The public repository currently has the boot-time zeroing version.</li>
             <li>Event detection with TIM2 in PWM-input mode, measuring period and duty cycle of an external signal inside the ISR with running-mean hysteresis detection.</li>
             <li>Bounded interrupt latency: the ISR sets flags only, deferring SD card and USB work to the main loop.</li>
             <li>SD logging on FatFs over SPI with a custom disk I/O layer, paired CSV run files, periodic sync, and safe close on stop.</li>
@@ -450,8 +455,43 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <div><dt>Role</dt><dd>Sole developer (AI-assisted with Claude Code)</dd></div>
             <div><dt>Dates</dt><dd>January 2026 – present</dd></div>
             <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
-            <div><dt>Stack</dt><dd><ul class="tags"><li>STM32WB5MMG</li><li>Cortex-M4 / M0+</li><li>Bare-metal C</li><li>FatFs</li><li>USB CDC / MSC / DFU</li><li>BLE GATT</li><li>Claude Code</li></ul></dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>STM32WB5MMG</li><li>Cortex-M4 / M0+</li><li>Bare-metal C</li><li>FatFs</li><li>USB CDC / MSC / DFU</li><li>BLE GATT</li><li>LIS2MDL</li><li>Magnetometer calibration</li><li>Claude Code</li></ul></dd></div>
             <div><dt>Code</dt><dd><a href="https://github.com/mdrafiislam/FRIENDS_2_STM32WB5" target="_blank" rel="noopener noreferrer">FRIENDS_2_STM32WB5</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- Hall-effect evaluation -->
+      <article class="part" id="p-hall">
+        <header>
+          <h3>Low-power Hall-effect sensor evaluation and TMAG5253 test boards</h3>
+          <p class="why">A search for a lower-power, smaller replacement for the FRIENDS-2 magnetometer pair, weighing current and size against sensitivity.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>Evaluated 20 Hall-effect sensor part numbers (9 families from TI, Allegro, Infineon and Diodes), using a duty-cycled power model checked against TI's published table to within 0.5 %.</li>
+            <li>Selected and recommended the TI TMAG5253: about 98.9 % lower calculated current (470 to 5.2 µA for the pair at 20 Hz) and a 62 % smaller footprint, with the trade-off of an about 90x coarser minimum detectable field (about 115 versus 1.3 µT).</li>
+            <li>Designed two TMAG5253BA1 test boards in KiCad 10, had them fabricated by PCBWay, and assembled them.</li>
+          </ul>
+        </div>
+        <details class="more">
+          <summary>Engineering detail</summary>
+          <ul>
+            <li>Chose the BA1 variant for 8x higher sensitivity, about 13.4 µT per ADC count on a 12-bit ADC.</li>
+            <li>3-sensor board: three TMAG5253BA1 sensors on one shared ADC line, read one at a time through separate enable lines, with a custom 6-pad connector.</li>
+            <li>Single-sensor breakout: 12.7 × 15.24 mm with a 0.1 in header, designed to interface with an STM32L476 board.</li>
+            <li>Followed the datasheet: 0.1 µF decoupling, a 100 kΩ output pull-down, and a silkscreen mark on the sensing element.</li>
+            <li>Used datasheet evidence and a skin-depth calculation to show that the ground copper fill does not shield the sensor.</li>
+            <li>Found errors in the distributor's (DigiKey) part listings, and delivered a technical report and a comparison spreadsheet to Professor Edward Sazonov.</li>
+          </ul>
+        </details>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>Lead researcher/engineer</dd></div>
+            <div><dt>Dates</dt><dd>October 2026 – present</dd></div>
+            <div><dt>Funding</dt><dd>NIH/NCI R01CA266170</dd></div>
+            <div><dt>Status</dt><dd>Recommendation delivered; test boards assembled, testing still to come</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>TI TMAG5253BA1</li><li>Hall-effect sensing</li><li>Power modeling</li><li>12-bit ADC</li><li>KiCad 10</li><li>PCBWay</li><li>STM32L476</li></ul></dd></div>
           </dl>
         </aside>
       </article>
@@ -645,6 +685,7 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
           <li>24-hour validation protocol with false-positive analysis and a minimum-duration filter (FRIENDS).</li>
           <li>Manual regression runs of the validation suite after firmware changes.</li>
           <li>Output consistency checks between a released executable and its source scripts.</li>
+          <li>Sensor calibration methods compared by 5-fold held-out validation on a recorded rotation run (FRIENDS-2).</li>
         </ul>
       </div>
       <div class="panel">
@@ -679,10 +720,10 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
       <div class="skill"><h3>Interfaces and protocols</h3><p>SPI (master and slave), I2C, UART, ADC, GPIO, USB (CDC, MSC, DFU), Bluetooth Low Energy (GATT, GAP, DFU)</p></div>
       <div class="skill"><h3>Hardware bring-up and debug</h3><p>Oscilloscope signal inspection, JTAG and SWD debugging, hand soldering and board rework, PCB modification, schematic revision, sensor calibration, mixed-signal bring-up</p></div>
       <div class="skill"><h3>Test and characterization</h3><p>Multi-device characterization campaigns, electromechanical test fixtures, unattended multi-day logging, regression validation after firmware changes, binary log decoding and verification</p></div>
-      <div class="skill"><h3>Sensing and signal processing</h3><p>IMUs, load cells, thermistors, capacitive touch, electromagnetic sensing, sensor fusion; filter design, FIR anti-alias filtering, zero-phase filtering and decimation, feature extraction, multi-stream timestamp synchronization</p></div>
+      <div class="skill"><h3>Sensing and signal processing</h3><p>IMUs, load cells, thermistors, capacitive touch, electromagnetic sensing, Hall-effect and AMR magnetic sensing, magnetometer calibration, datasheet-based sensor selection, ADC resolution analysis, sensor fusion; filter design, FIR anti-alias filtering, zero-phase filtering and decimation, feature extraction, multi-stream timestamp synchronization</p></div>
       <div class="skill"><h3>Machine learning</h3><p>PyTorch, TensorFlow, Keras, scikit-learn; 1D CNNs, CNN-BiLSTM, 1D U-Net, dilated residual CNNs, Rank-N-Contrast, YOLOv5, XGBoost, LightGBM, random forest</p></div>
       <div class="skill"><h3>Validation and statistics</h3><p>Leave-one-subject-out and nested cross-validation, per-fold refitting, Bland-Altman, Lin's concordance, Friedman and Holm-corrected Wilcoxon tests, bootstrap confidence intervals</p></div>
-      <div class="skill"><h3>Languages and tools</h3><p>C, C++, Python, MATLAB; Git, STM32CubeIDE, Code Composer Studio, Segger Embedded Studio, EasyPC, Autodesk Fusion 360; Claude Code and Codex in daily practice</p></div>
+      <div class="skill"><h3>Languages and tools</h3><p>C, C++, Python, MATLAB; Git, STM32CubeIDE, Code Composer Studio, Segger Embedded Studio, EasyPC, KiCad 10 (TMAG5253 test boards), Autodesk Fusion 360; Claude Code and Codex in daily practice</p></div>
     </div>
   </div>
 </section>
@@ -701,8 +742,9 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
           <p class="where">The University of Alabama, Department of Electrical and Computer Engineering</p>
           <p>Embedded firmware, hardware test infrastructure and sensor data systems across NSF- and NIH-funded wearable device programs.</p>
           <ul>
+            <li>As Smart Lacelock project lead, decided the sensors, hardware and firmware design for two team members, broke the work into tasks, estimated how long each would take, set the schedule, judged whether goals were feasible, and reported progress to Professor Edward Sazonov by weekly email.</li>
             <li>Taught surface-mount soldering to undergraduates on Capstone Design teams (Fall 2025, Spring 2026) and helped them debug microcontroller code and circuit boards.</li>
-            <li>Trained two undergraduates in vape device lifecycle testing; working with a third on Bluetooth Low Energy integration for a wearable food intake monitor.</li>
+            <li>Trained two undergraduates in vape device lifecycle testing; assigns tasks to, and reviews the firmware of, a third undergraduate working on Bluetooth Low Energy integration for a wearable food intake monitor.</li>
             <li>Trained the clinicians and clinical researchers who collected data in the University of Minnesota sit-to-stand study and the FRIENDS study to use the sensors and the data-collection GUI.</li>
           </ul>
         </div>
