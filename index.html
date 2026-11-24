@@ -247,6 +247,8 @@ section { padding: clamp(48px, 7vw, 88px) 0 0; }
 .shot figcaption { margin-top: 6px; font-size: 0.9rem; color: var(--ink-2); }
 .shot.narrow { max-width: 268px; }
 .shot.wide { max-width: 100%; }
+.screens { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 640px; }
+.screens img { border-radius: 14px; }
 .shot video { display: block; width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
 #validation .shot { margin-top: 22px; }
 details.more { grid-column: 1; margin-top: 4px; align-self: start; }
@@ -298,6 +300,7 @@ details.more[open] summary { margin-bottom: 6px; }
 .pubs li { margin: 0.55em 0; max-width: 78ch; }
 .pubs .me { font-weight: 700; }
 .pubs .venue { font-style: italic; }
+.pubs a { overflow-wrap: anywhere; }
 .pill { display: inline-block; font-size: 0.78rem; padding: 0 8px; border-radius: 999px; background: var(--row); color: var(--ink-2); margin-left: 4px; white-space: nowrap; }
 .note { color: var(--ink-2); font-size: 0.95rem; }
 
@@ -673,6 +676,49 @@ footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; g
             <div><dt>Dates</dt><dd>2022 – 2023</dd></div>
             <div><dt>Funding</dt><dd>NSF 1734501</dd></div>
             <div><dt>Paper</dt><dd><a href="https://doi.org/10.3390/s23115355" target="_blank" rel="noopener noreferrer">Sensors, 2023</a></dd></div>
+          </dl>
+        </aside>
+      </article>
+
+      <!-- FRIENDS BLE Android app -->
+      <article class="part" id="p-android">
+        <header>
+          <h3>FRIENDS BLE: Android companion app (vibe-coded)</h3>
+          <p class="why">Lets a researcher connect a phone to the FRIENDS-2 board, watch both magnetometers and detected puffs live, and control SD logging, the board clock and sensor zeroing without a laptop.</p>
+        </header>
+        <div class="body">
+          <ul class="did">
+            <li>Built with an AI coding assistant (Claude), which wrote the code. I gave it the board's BLE packet format, firmware commands, my Python reference tools and real capture data, then tested each version on a phone with the board and directed the fixes.</li>
+            <li>Decodes the board's binary BLE stream in real time, flags lost packets and missing samples, converts device ticks to UTC, and shades puff events on the live plots.</li>
+            <li>Checked against the existing tools: decoder tests use bytes from the Python reference encoder, zeroing tests use the firmware's own C code compiled on a PC, and three real recordings replayed with no decode errors.</li>
+            <li>Debugged from field logs: comparing the phone's connection log with nRF Connect's log of the same board led to removing the app's own MTU request, so both connect the same way.</li>
+          </ul>
+          <figure class="shot wide">
+            <div class="screens">
+              <a href="assets/friends-ble-plots.png" target="_blank" rel="noopener noreferrer"><img src="assets/friends-ble-plots.png" width="720" height="1600" alt="App screen with live plots of the two zeroed magnetometer magnitudes and their zeroed difference over the last 60 seconds" loading="lazy" decoding="async"></a>
+              <a href="assets/friends-ble-menu.png" target="_blank" rel="noopener noreferrer"><img src="assets/friends-ble-menu.png" width="720" height="1600" alt="App side menu with board controls: zero sensors, set board clock, start and stop SD logging, plot views, a command box and disconnect" loading="lazy" decoding="async"></a>
+              <a href="assets/friends-ble-log.png" target="_blank" rel="noopener noreferrer"><img src="assets/friends-ble-log.png" width="720" height="1600" alt="App status and log page showing link statistics and a timestamped connection log" loading="lazy" decoding="async"></a>
+            </div>
+            <figcaption>Running on an Android 14 phone connected to a FRIENDS-2 board: live plots, board controls, and the status and log page. Other nearby Bluetooth devices are blurred in the log.</figcaption>
+          </figure>
+        </div>
+        <details class="more">
+          <summary>Engineering detail</summary>
+          <ul>
+            <li>Native Android (Android 10 to 17) in Java, using only the Android framework, with no third-party libraries. Plots and controls are drawn directly on a Canvas.</li>
+            <li>Per-sensor zeroing follows the firmware: the app averages the same 64 sample pairs, with the same arithmetic and rounding as the firmware's C code, so phone and board baselines come from the same data.</li>
+            <li>The time axis follows the board's clock, which runs about 2 % slow against the phone. The app stays within 0.1 s; the PC Python viewer falls 4.6 s behind after 4 minutes.</li>
+            <li>Reconnects automatically after the link drops, and the status and log page copies the full connection log, with the phone model, for bug reports.</li>
+            <li>About 4,500 lines of Java; 50 unit tests pass in the Gradle build.</li>
+          </ul>
+        </details>
+        <aside>
+          <dl>
+            <div><dt>Role</dt><dd>Requirements, testing on hardware, debugging. Code written by AI (Claude).</dd></div>
+            <div><dt>Dates</dt><dd>2026</dd></div>
+            <div><dt>Board</dt><dd>FRIENDS-2 (STM32WB5MMG)</dd></div>
+            <div><dt>Status</dt><dd>Working; tested on a Motorola moto g play 2024 (Android 14)</dd></div>
+            <div><dt>Stack</dt><dd><ul class="tags"><li>Android</li><li>Java</li><li>BLE GATT</li><li>Claude Code</li></ul></dd></div>
           </dl>
         </aside>
       </article>
